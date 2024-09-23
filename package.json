@@ -1,0 +1,35 @@
+{
+  "name": "shorikame_api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js",
+    "dev": "node --env-file .env --watch src/index.js",
+    "dev:insomnia": "node --watch src/index.js --insomnia"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EmanuelDDTech/shorikame_api.git"
+  },
+  "author": "Emanuel Jimenez",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/EmanuelDDTech/shorikame_api/issues"
+  },
+  "homepage": "https://github.com/EmanuelDDTech/shorikame_api#readme",
+  "description": "",
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "colors": "^1.4.0",
+    "express": "^4.21.0",
+    "morgan": "^1.10.0",
+    "pg": "^8.13.0"
+  },
+  "devDependencies": {
+    "@rushstack/eslint-patch": "^1.10.4",
+    "eslint": "^9.11.0",
+    "prettier": "^3.3.3"
+  }
+}
