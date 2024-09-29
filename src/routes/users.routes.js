@@ -10,7 +10,7 @@ import {
 const router = Router();
 
 router.get('/', (req, res) => {
-  res.send({ hola: 'hello' });
+  res.send({ hola: 'hell' });
 });
 
 router.route('/users').get(getUsers).post(createUser);
