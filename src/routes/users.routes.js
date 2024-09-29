@@ -9,6 +9,10 @@ import {
 
 const router = Router();
 
+router.get('/', (req, res) => {
+  res.send({ hola: 'hello' });
+});
+
 router.route('/users').get(getUsers).post(createUser);
 
 router.route('/users/:id').get(getUserById).delete(deleteUser).put(updateUser);
