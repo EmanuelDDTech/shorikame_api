@@ -1,14 +1,16 @@
-import express from 'express';
-import { PORT } from './config.js';
-import userRoutes from './routes/users.routes.js';
-import morgan from 'morgan';
+import app from './app.js';
+import { sequelize } from './database/database.js';
 
-const app = express();
+async function main() {
+  try {
+    await sequelize.sync({ force: false });
 
-app.use(morgan('dev'));
-app.use(express.json());
-app.use(userRoutes);
+    app.listen(process.env.PORT);
 
-app.listen(PORT);
+    console.log('Server on port', process.env.PORT);
+  } catch (error) {
+    console.error('No se pudo establecer la conexión con la DB', error);
+  }
+}
 
-console.log('Server on port', PORT);
+main();
