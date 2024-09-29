@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --env-file src/index.js",
+    "start": "node --env-file .env src/index.js",
     "dev": "node --env-file .env --watch src/index.js",
     "dev:insomnia": "node --watch src/index.js --insomnia"
   },
@@ -27,7 +27,8 @@
     "morgan": "^1.10.0",
     "pg": "^8.13.0",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.3"
+    "sequelize": "^6.37.3",
+    "serverless-http": "^3.2.0"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.10.4",
