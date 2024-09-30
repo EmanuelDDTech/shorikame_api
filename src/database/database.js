@@ -1,4 +1,5 @@
 import Sequelize from 'sequelize';
+import pg from 'pg';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 import fs from 'fs';
@@ -20,5 +21,6 @@ export const sequelize = new Sequelize(
         ca: fs.readFileSync(filePath).toString(),
       },
     },
+    dialectModule: pg,
   },
 );
