@@ -5,7 +5,7 @@ import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const filePath = join(__dirname, '/../../certificados', 'us-east-2-bundle.pem');
+const filePath = join(__dirname, '/../certificados', 'us-east-2-bundle.pem');
 
 export const sequelize = new Sequelize(
   process.env.DB_DATABASE,
