@@ -1,5 +1,11 @@
 import Sequelize from 'sequelize';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 import fs from 'fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const filePath = join(__dirname, '/../../certificados', 'us-east-2-bundle.pem');
 
 export const sequelize = new Sequelize(
   process.env.DB_DATABASE,
@@ -11,7 +17,7 @@ export const sequelize = new Sequelize(
     dialectOptions: {
       ssl: {
         rejectUnauthorized: true,
-        ca: fs.readFileSync(`${__dirname}/../us-east-2-bundle.pem`).toString(),
+        ca: fs.readFileSync(filePath).toString(),
       },
     },
   },
