@@ -11,7 +11,7 @@ export const sequelize = new Sequelize(
     dialectOptions: {
       ssl: {
         rejectUnauthorized: true,
-        ca: fs.readFileSync('./src/us-east-2-bundle.pem').toString(),
+        ca: fs.readFileSync(`${__dirname}/../us-east-2-bundle.pem`).toString(),
       },
     },
   },
