@@ -26,6 +26,10 @@ export const User = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    isAdmin: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
     token: {
       type: DataTypes.STRING,
       defaultValue: () => uniqueId(),
