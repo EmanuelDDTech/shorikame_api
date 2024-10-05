@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../database/database.js';
-import { uniqueId } from '../utils/index.js';
+import { ProductCategory } from './ProductCategory.js';
 
 export const Product = sequelize.define('products', {
   id: {
@@ -35,4 +35,13 @@ export const Product = sequelize.define('products', {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
+});
+
+ProductCategory.hasMany(Product, {
+  foreignKey: 'product_category_id',
+  sourceKey: 'id',
+});
+Product.belongsTo(ProductCategory, {
+  foreignKey: 'product_category_id',
+  targetId: 'id',
 });
