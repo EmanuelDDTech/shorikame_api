@@ -9,7 +9,7 @@ const createCategory = async (req, res) => {
   const { name } = req.body;
 
   try {
-    const newCategory = await ProductCategory.create({ name });
+    await ProductCategory.create({ name });
     return res.json({ msg: 'Categoría creada correctamente' });
   } catch (error) {
     console.log(error);
