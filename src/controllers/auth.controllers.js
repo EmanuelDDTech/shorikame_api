@@ -9,6 +9,19 @@ const getUsers = async (req, res) => {
 
 const sendUser = async (req, res) => {
   const { user } = req;
+  if (!user) {
+    const error = new Error('Token no válido');
+    return res.status(403).json({ msg: error.message });
+  }
+  return res.json(user);
+};
+
+const sendAdmin = async (req, res) => {
+  const { user } = req;
+  if (!user.isAdmin) {
+    const error = new Error('Acción no válida');
+    return res.status(403).json({ msg: error.message });
+  }
   return res.json(user);
 };
 
@@ -34,7 +47,7 @@ const register = async (req, res) => {
 
     sendEmailVerification({ name: newUser.name, email: newUser.email, token: newUser.token });
 
-    return res.json({ msg: 'Usuario creado correctamente' });
+    return res.json({ msg: 'Revisa el correo que te enviamos para la verificación de la cuenta.' });
   } catch (error) {
     if (error?.original.code === '23505') {
       return res.status(409).json({ msg: 'El correo ya existe' });
@@ -125,4 +138,4 @@ const updateUser = async (req, res) => {
   }
 };
 
-export { getUsers, sendUser, register, deleteUser, updateUser, verifyAccount, login };
+export { getUsers, sendUser, register, deleteUser, updateUser, verifyAccount, login, sendAdmin };
