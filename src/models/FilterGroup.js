@@ -9,10 +9,10 @@ export const FilterGroup = sequelize.define('filter_group', {
   },
   name: {
     type: DataTypes.STRING,
-    allowNul: false,
+    allowNull: false,
   },
   slug: {
     type: DataTypes.STRING,
-    allowNul: false,
+    allowNull: true,
   },
 });
