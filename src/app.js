@@ -4,6 +4,7 @@ import cors from 'cors';
 import authRoutes from './routes/auth.routes.js';
 import productRoutes from './routes/product.routes.js';
 import categoryRoutes from './routes/category.routes.js';
+import filterGroupRoutes from './routes/filterGroup.routes.js';
 
 const app = express();
 
@@ -31,5 +32,6 @@ app.use(cors(corsOptions));
 app.use('/auth', authRoutes);
 app.use('/categoria', categoryRoutes);
 app.use('/producto', productRoutes);
+app.use('/filtro-grupo', filterGroupRoutes);
 
 export default app;
