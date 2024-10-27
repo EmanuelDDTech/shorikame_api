@@ -1,3 +1,6 @@
+import { FilterCategory } from '../models/FilterCategory.js';
+import { FilterGroup } from '../models/FilterGroup.js';
+import { FilterValue } from '../models/FilterValue.js';
 import { ProductCategory } from '../models/ProductCategory.js';
 
 const createCategory = async (req, res) => {
@@ -9,21 +12,44 @@ const createCategory = async (req, res) => {
   const { name } = req.body;
 
   try {
-    await ProductCategory.create({ name });
-    return res.json({ msg: 'Categoría creada correctamente' });
+    const { dataValues: category } = await ProductCategory.create({ name });
+
+    return res.json({ msg: 'Categoría creada correctamente', category });
   } catch (error) {
     console.log(error);
   }
 };
 
 const getCategories = async (req, res) => {
-  const categories = await ProductCategory.findAll();
+  const categories = await ProductCategory.findAll({
+    include: [
+      {
+        model: FilterCategory,
+        attributes: ['id'],
+        include: { model: FilterGroup, attributes: ['id', 'name'] },
+      },
+    ],
+  });
   return res.json(categories);
 };
 
 const getCategoryById = async (req, res) => {
   const { id } = req.params;
-  const category = await ProductCategory.findOne({ where: { id } });
+  const category = await ProductCategory.findOne({
+    where: { id },
+    attributes: ['id', 'name'],
+    // include: [
+    //   {
+    //     model: FilterCategory,
+    //     attributes: ['id'],
+    //     include: {
+    //       model: FilterGroup,
+    //       attributes: ['id', 'name'],
+    //       include: { model: FilterValue, attributes: ['id', 'name'] },
+    //     },
+    //   },
+    // ],
+  });
 
   if (!category) {
     const error = new Error('La categoría no existe');
@@ -56,13 +82,14 @@ const deleteCategory = async (req, res) => {
   const { id } = req.params;
 
   try {
+    await FilterCategory.destroy({ where: { product_category_id: id } });
     await ProductCategory.destroy({
       where: {
         id,
       },
     });
 
-    return res.sendStatus(204);
+    return res.json({ msg: 'La categoría se eliminó correctamente' });
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }

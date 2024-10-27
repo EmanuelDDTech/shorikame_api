@@ -1,4 +1,5 @@
 import { FilterGroup } from '../models/FilterGroup.js';
+import { FilterValue } from '../models/FilterValue.js';
 
 const createFilterGroup = async (req, res) => {
   if (Object.values(req.body).includes('')) {
@@ -7,7 +8,6 @@ const createFilterGroup = async (req, res) => {
   }
 
   const { name } = req.body;
-  console.log(name);
 
   try {
     await FilterGroup.create({ name });
@@ -18,13 +18,20 @@ const createFilterGroup = async (req, res) => {
 };
 
 const getFilterGroups = async (req, res) => {
-  const filterGroups = await FilterGroup.findAll();
+  const filterGroups = await FilterGroup.findAll({
+    attributes: ['id', 'name'],
+    include: { model: FilterValue, attributes: ['id', 'name'] },
+  });
   return res.json(filterGroups);
 };
 
 const getFilterGroupById = async (req, res) => {
   const { id } = req.params;
-  const filterGroup = await FilterGroup.findOne({ where: { id } });
+  const filterGroup = await FilterGroup.findOne({
+    where: { id },
+    attributes: ['id', 'name'],
+    include: { model: FilterValue, attributes: ['id', 'name'] },
+  });
 
   if (!filterGroup) {
     const error = new Error('El grupo de filtros no existe');

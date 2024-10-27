@@ -10,11 +10,11 @@ export const FilterValue = sequelize.define('filter_value', {
   },
   name: {
     type: DataTypes.STRING,
-    allowNul: false,
+    allowNull: false,
   },
   slug: {
     type: DataTypes.STRING,
-    allowNul: false,
+    allowNull: true,
   },
 });
 
