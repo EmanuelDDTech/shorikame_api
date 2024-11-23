@@ -1,25 +1,14 @@
 import { Product } from '../models/Product.js';
+import { ProductGallery } from '../models/ProductGallery.js';
 
 const createProduct = async (req, res) => {
-  console.log('Body: ' + req.body);
   if (Object.values(req.body).includes('')) {
     const error = new Error('Todos los campos son obligatorios');
     return res.status(400).json({ msg: error.message });
   }
 
-  const { name, description, price, discount, image, sku, stock, product_category_id } = req.body;
-
   try {
-    const newProduct = await Product.create({
-      name,
-      description,
-      price,
-      image,
-      discount,
-      sku,
-      stock,
-      product_category_id,
-    });
+    const newProduct = await Product.create(req.body);
     return res.json(newProduct);
   } catch (error) {
     return res.status(500).json({ msg: error.message });
@@ -41,7 +30,13 @@ const getProductById = async (req, res) => {
 
 const getProducts = async (req, res) => {
   try {
-    const products = await Product.findAll();
+    const products = await Product.findAll({
+      include: {
+        model: ProductGallery,
+        attributes: ['id', 'order', 'url', 'product_id'],
+        where: { order: 1 },
+      },
+    });
     return res.json(products);
   } catch (error) {
     return res.status(500).json({ msg: error.message });

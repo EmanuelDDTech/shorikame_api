@@ -38,17 +38,6 @@ const getCategoryById = async (req, res) => {
   const category = await ProductCategory.findOne({
     where: { id },
     attributes: ['id', 'name'],
-    // include: [
-    //   {
-    //     model: FilterCategory,
-    //     attributes: ['id'],
-    //     include: {
-    //       model: FilterGroup,
-    //       attributes: ['id', 'name'],
-    //       include: { model: FilterValue, attributes: ['id', 'name'] },
-    //     },
-    //   },
-    // ],
   });
 
   if (!category) {

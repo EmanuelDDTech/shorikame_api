@@ -28,10 +28,6 @@ export const Product = sequelize.define('products', {
     type: DataTypes.DECIMAL,
     allowNull: false,
   },
-  image: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
   discount: {
     type: DataTypes.DECIMAL,
   },
