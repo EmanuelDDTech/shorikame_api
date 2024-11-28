@@ -1,3 +1,4 @@
+import { where } from 'sequelize';
 import { FilterGroup } from '../models/FilterGroup.js';
 import { FilterValue } from '../models/FilterValue.js';
 

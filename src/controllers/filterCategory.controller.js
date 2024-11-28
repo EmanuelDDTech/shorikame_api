@@ -20,6 +20,11 @@ const createFilterCategory = async (req, res) => {
 
 const getFiltersCategory = async (req, res) => {
   const { categId } = req.params;
+
+  if (!categId) {
+    return res.status(500).json({ msg: 'Categoría inválida' });
+  }
+
   const filtersCategory = await FilterCategory.findAll({
     where: { product_category_id: categId },
     attributes: ['id'],
