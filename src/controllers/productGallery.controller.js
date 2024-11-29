@@ -32,6 +32,7 @@ const getProductGalleryAll = async (req, res) => {
     const gallery = await ProductGallery.findAll({
       where: { product_id },
       attributes: ['id', 'order', 'url', 'product_id'],
+      order: [['order']],
     });
     return res.json(gallery);
   } catch (error) {}
