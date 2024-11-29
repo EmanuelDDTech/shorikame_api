@@ -45,7 +45,7 @@ const getProducts = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { name, description, price, image, discount, stock, sku } = req.body;
+  const { name, description, price, discount, stock, sku, product_category_id } = req.body;
 
   try {
     const product = await Product.findByPk(id);
@@ -56,13 +56,13 @@ const updateProduct = async (req, res) => {
     product.sku = sku;
     product.description = description;
     product.price = price;
-    product.image = image;
     product.discount = discount;
     product.stock = stock;
+    product.product_category_id = product_category_id;
 
     await product.save();
 
-    return res.json(product);
+    return res.json({ msg: 'Producto actualizado correctamente' });
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }

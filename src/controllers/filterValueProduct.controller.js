@@ -33,4 +33,21 @@ const saveFilterProduct = async (req, res) => {
   }
 };
 
-export { saveFilterProduct };
+const findByProductId = async (req, res) => {
+  const { productId } = req.params;
+
+  try {
+    const filterProducts = await FilterValueProduct.findAll({
+      where: { productId },
+      attributes: ['filterValueId'],
+    });
+
+    const filterProductIds = filterProducts.map((filter) => filter.dataValues.filterValueId);
+
+    return res.json(filterProductIds);
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
+
+export { saveFilterProduct, findByProductId };

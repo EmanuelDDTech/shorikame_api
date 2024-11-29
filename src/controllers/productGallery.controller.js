@@ -1,3 +1,4 @@
+import { Op } from 'sequelize';
 import { ProductGallery } from '../models/ProductGallery.js';
 
 const createProductGallery = async (req, res) => {
@@ -36,4 +37,35 @@ const getProductGalleryAll = async (req, res) => {
   } catch (error) {}
 };
 
-export { createProductGallery, getProductGalleryAll };
+const updateGallery = async (req, res) => {
+  const { product_id } = req.params;
+  const { gallery } = req.body;
+
+  const galleryOrders = gallery.map((image) => {
+    return image.order;
+  });
+
+  await ProductGallery.destroy({
+    where: {
+      product_id,
+      order: { [Op.notIn]: galleryOrders },
+    },
+  });
+
+  await Promise.all(
+    gallery.map(async (newImage) => {
+      const image = await ProductGallery.findOne({ where: { product_id, order: newImage.order } });
+
+      if (image !== null && image !== undefined) {
+        image.url = newImage.url;
+        await image.save();
+      } else {
+        await ProductGallery.create({ product_id, order: newImage.order, url: newImage.url });
+      }
+    }),
+  );
+
+  return res.json({ msg: 'Galería actualizada correctamente' });
+};
+
+export { createProductGallery, getProductGalleryAll, updateGallery };
