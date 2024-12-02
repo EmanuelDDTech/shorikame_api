@@ -1,3 +1,4 @@
+import { FilterValueProduct } from '../models/FilterValueProduct.js';
 import { Product } from '../models/Product.js';
 import { ProductGallery } from '../models/ProductGallery.js';
 
@@ -72,6 +73,8 @@ const deleteProduct = async (req, res) => {
   const { id } = req.params;
 
   try {
+    await ProductGallery.destroy({ where: { product_id: id } });
+    await FilterValueProduct.destroy({ where: { productId: id } });
     await Product.destroy({
       where: {
         id,
