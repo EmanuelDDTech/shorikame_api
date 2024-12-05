@@ -1,9 +1,14 @@
 import { Router } from 'express';
-import { createBanner } from '../controllers/banner.controller.js';
+import {
+  createBanner,
+  getBannerAll,
+  getBannerById,
+  updateBanner,
+} from '../controllers/banner.controller.js';
 
 const router = Router();
 
-router.route('/').get().post(createBanner);
-router.route('/:id').get().put().delete();
+router.route('/').get(getBannerAll).post(createBanner);
+router.route('/:id').get(getBannerById).put(updateBanner).delete();
 
 export default router;

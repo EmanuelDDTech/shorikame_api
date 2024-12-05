@@ -35,7 +35,9 @@ const getProductGalleryAll = async (req, res) => {
       order: [['order']],
     });
     return res.json(gallery);
-  } catch (error) {}
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 const updateGallery = async (req, res) => {
