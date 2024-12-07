@@ -63,4 +63,15 @@ const updateBanner = async (req, res) => {
   }
 };
 
-export { createBanner, getBannerAll, getBannerById, updateBanner };
+const deleteBanner = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await Banner.destroy({ where: { id } });
+    return res.sendStatus(204);
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
+
+export { createBanner, getBannerAll, getBannerById, updateBanner, deleteBanner };
