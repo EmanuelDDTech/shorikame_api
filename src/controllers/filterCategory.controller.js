@@ -30,8 +30,8 @@ const getFiltersCategory = async (req, res) => {
     attributes: ['id'],
     include: {
       model: FilterGroup,
-      attributes: ['id', 'name'],
-      include: { model: FilterValue, attributes: ['id', 'name'] },
+      attributes: ['id', 'name', 'slug'],
+      include: { model: FilterValue, attributes: ['id', 'name', 'slug'] },
     },
   });
 

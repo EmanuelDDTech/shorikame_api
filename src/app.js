@@ -10,6 +10,7 @@ import filterCategoryRoutes from './routes/filterCategory.routes.js';
 import productGalleryRoutes from './routes/productGallery.routes.js';
 import filterProductRoutes from './routes/filterValueProduct.routes.js';
 import bannerRoutes from './routes/banner.routes.js';
+import productsRoutes from './routes/products.routes.js';
 
 const app = express();
 
@@ -43,5 +44,6 @@ app.use('/filtro-categoria', filterCategoryRoutes);
 app.use('/product-gallery', productGalleryRoutes);
 app.use('/filtro-producto', filterProductRoutes);
 app.use('/banner', bannerRoutes);
+app.use('/productos', productsRoutes);
 
 export default app;
