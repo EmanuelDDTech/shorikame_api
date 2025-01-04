@@ -4,12 +4,16 @@ import { Product } from './Product.js';
 import { User } from './User.js';
 
 export const Cart = sequelize.define(
-  'cart',
+  'carts',
   {
     id: {
       type: DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
+    },
+    quantity: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
     },
   },
   {

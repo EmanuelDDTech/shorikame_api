@@ -11,6 +11,7 @@ import productGalleryRoutes from './routes/productGallery.routes.js';
 import filterProductRoutes from './routes/filterValueProduct.routes.js';
 import bannerRoutes from './routes/banner.routes.js';
 import productsRoutes from './routes/products.routes.js';
+import carritoRoutes from './routes/carrito.routes.js';
 
 const app = express();
 
@@ -45,5 +46,6 @@ app.use('/product-gallery', productGalleryRoutes);
 app.use('/filtro-producto', filterProductRoutes);
 app.use('/banner', bannerRoutes);
 app.use('/productos', productsRoutes);
+app.use('/carrito', carritoRoutes);
 
 export default app;
