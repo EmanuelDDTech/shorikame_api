@@ -13,7 +13,8 @@ router
   .route('/')
   .get(authMiddleware, getCart)
   .post(authMiddleware, addProduct)
-  .put(authMiddleware, updateProduct)
-  .delete(authMiddleware, deleteProduct);
+  .put(authMiddleware, updateProduct);
+
+router.route('/:productId').delete(authMiddleware, deleteProduct);
 
 export default router;

@@ -68,7 +68,7 @@ const updateProduct = async (req, res) => {
 };
 
 const deleteProduct = async (req, res) => {
-  const { productId } = req.body;
+  const { productId } = req.params;
   const { id: userId } = req.user;
 
   try {
