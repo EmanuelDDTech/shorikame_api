@@ -1,6 +1,11 @@
 import { User } from '../models/User.js';
-import { hashPassword, checkPassword, generateJWT } from '../utils/index.js';
+import { hashPassword, checkPassword, generateJWT, uniqueId } from '../utils/index.js';
 import { sendEmailVerification } from '../emails/authEmailService.js';
+import { OAuth2Client } from 'google-auth-library';
+
+const client = new OAuth2Client(
+  '409428805948-oabs342a3r6b7e21q6922d5buubkiph0.apps.googleusercontent.com',
+);
 
 const getUsers = async (req, res) => {
   const users = await User.findAll();
@@ -101,6 +106,34 @@ const login = async (req, res) => {
   return res.json({ token });
 };
 
+const googleLogin = async (req, res) => {
+  const { credential } = req.body;
+
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: '409428805948-oabs342a3r6b7e21q6922d5buubkiph0.apps.googleusercontent.com',
+    });
+
+    const payload = ticket.getPayload();
+    const user = await User.findOne({ where: { email: payload.email } });
+
+    if (user) {
+      const token = generateJWT(user.id);
+      return res.json({ token });
+    } else {
+      const uniqueId = Date.now().toString(32) + Math.random().toString(32).substring(2);
+      const password = await hashPassword(uniqueId);
+      const newUser = await User.create({ name: payload.name, email: payload.email, password });
+
+      const token = generateJWT(newUser.id);
+      return res.json({ token });
+    }
+  } catch (error) {
+    return res.status(401).json({ msg: error.message });
+  }
+};
+
 const deleteUser = async (req, res) => {
   const { id } = req.params;
 
@@ -138,4 +171,14 @@ const updateUser = async (req, res) => {
   }
 };
 
-export { getUsers, sendUser, register, deleteUser, updateUser, verifyAccount, login, sendAdmin };
+export {
+  getUsers,
+  sendUser,
+  register,
+  deleteUser,
+  updateUser,
+  verifyAccount,
+  login,
+  googleLogin,
+  sendAdmin,
+};
