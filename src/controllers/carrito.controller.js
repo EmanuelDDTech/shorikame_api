@@ -55,8 +55,14 @@ const updateProduct = async (req, res) => {
     const productCart = await Cart.findOne({
       where: { productId, userId },
     });
+    const product = await Product.findOne({ where: { id: productId } });
 
     if (!productCart) return res.status(404).json({ msg: 'El producto no existe en este carrito' });
+    if (!product) return res.status(404).json({ msg: 'El producto no existe' });
+
+    if (quantity > product.stock) {
+      return res.status(409).json({ msg: 'No hay stock suficiente' });
+    }
 
     productCart.quantity = quantity;
     await productCart.save();
