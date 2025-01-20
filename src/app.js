@@ -12,6 +12,7 @@ import filterProductRoutes from './routes/filterValueProduct.routes.js';
 import bannerRoutes from './routes/banner.routes.js';
 import productsRoutes from './routes/products.routes.js';
 import carritoRoutes from './routes/carrito.routes.js';
+import addressRoutes from './routes/address.routes.js';
 
 const app = express();
 
@@ -47,5 +48,6 @@ app.use('/filtro-producto', filterProductRoutes);
 app.use('/banner', bannerRoutes);
 app.use('/productos', productsRoutes);
 app.use('/carrito', carritoRoutes);
+app.use('/address', addressRoutes);
 
 export default app;
