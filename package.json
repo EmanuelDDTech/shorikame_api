@@ -21,7 +21,9 @@
   "homepage": "https://github.com/EmanuelDDTech/shorikame_api#readme",
   "description": "",
   "dependencies": {
+    "@paypal/paypal-server-sdk": "^0.6.1",
     "bcrypt": "^5.1.1",
+    "body-parser": "^1.20.3",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
     "express": "^4.21.0",
