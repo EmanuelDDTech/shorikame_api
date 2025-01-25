@@ -30,8 +30,8 @@ const paymentsController = new PaymentsController(client);
 const order = async (req, res) => {
   try {
     // use the cart information passed from the front-end to calculate the order amount detals
-    const { cart } = req.body;
-    const { jsonResponse, httpStatusCode } = await createOrder(cart);
+    const { cart, total } = req.body;
+    const { jsonResponse, httpStatusCode } = await createOrder(cart, total.toString());
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     console.error('Failed to create order:', error);
@@ -39,7 +39,7 @@ const order = async (req, res) => {
   }
 };
 
-const createOrder = async (cart) => {
+const createOrder = async (cart, total) => {
   const collect = {
     body: {
       intent: 'CAPTURE',
@@ -47,8 +47,19 @@ const createOrder = async (cart) => {
         {
           amount: {
             currencyCode: 'MXN',
-            value: '100',
+            value: total,
+            breakdown: {
+              item_total: {
+                currencyCode: 'MXN',
+                value: total,
+              },
+              shipping: {
+                currencyCode: 'MXN',
+                value: '0',
+              },
+            },
           },
+          // items: cart,
         },
       ],
     },
