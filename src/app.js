@@ -14,6 +14,7 @@ import productsRoutes from './routes/products.routes.js';
 import carritoRoutes from './routes/carrito.routes.js';
 import addressRoutes from './routes/address.routes.js';
 import paypalRoutes from './routes/paypal.routes.js';
+import saleRoutes from './routes/sale.routes.js';
 
 const app = express();
 
@@ -51,5 +52,6 @@ app.use('/productos', productsRoutes);
 app.use('/carrito', carritoRoutes);
 app.use('/address', addressRoutes);
 app.use('/paypal', paypalRoutes);
+app.use('/ordenes', saleRoutes);
 
 export default app;
