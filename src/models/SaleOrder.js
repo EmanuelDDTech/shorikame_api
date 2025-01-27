@@ -1,6 +1,7 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '../database/database.js';
 import { User } from './User.js';
+import { Address } from './Address.js';
 
 export const SaleOrder = sequelize.define('sale_order', {
   id: {
@@ -36,5 +37,14 @@ User.hasMany(SaleOrder, {
 });
 SaleOrder.belongsTo(User, {
   foreignKey: 'user_id',
+  targetId: 'id',
+});
+
+Address.hasMany(SaleOrder, {
+  foreignKey: 'address_id',
+  sourceKey: 'id',
+});
+SaleOrder.belongsTo(Address, {
+  foreignKey: 'address_id',
   targetId: 'id',
 });
