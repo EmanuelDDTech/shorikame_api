@@ -16,6 +16,7 @@ import addressRoutes from './routes/address.routes.js';
 import paypalRoutes from './routes/paypal.routes.js';
 import saleRoutes from './routes/sale.routes.js';
 import campaignTypeRoutes from './routes/campaignType.routes.js';
+import campaignRoutes from './routes/campaign.routes.js';
 
 const app = express();
 
@@ -55,5 +56,6 @@ app.use('/address', addressRoutes);
 app.use('/paypal', paypalRoutes);
 app.use('/ordenes', saleRoutes);
 app.use('/campanas-tipos', campaignTypeRoutes);
+app.use('/campanas', campaignRoutes);
 
 export default app;
