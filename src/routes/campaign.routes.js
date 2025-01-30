@@ -10,7 +10,7 @@ import authMiddleware from '../middleware/authMiddleware.js';
 
 const router = Router();
 
-router.route('/').get(authMiddleware, getCampaignAll).post(authMiddleware, createCampaign);
+router.route('/').get(getCampaignAll).post(authMiddleware, createCampaign);
 router
   .route('/:id')
   .get(authMiddleware, getCampaignById)
