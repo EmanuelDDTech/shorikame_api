@@ -1,9 +1,14 @@
 import { Campaign } from '../models/Campaign.js';
+import { CampaignType } from '../models/CampaignType.js';
 
 const getCampaignAll = async (req, res) => {
   try {
     const campaigns = await Campaign.findAll({
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
+      attributes: { exclude: ['createdAt', 'updatedAt', 'campaign_type_id'] },
+      include: {
+        model: CampaignType,
+        attributes: { exclude: ['createdAt', 'updatedAt'] },
+      },
     });
     return res.json(campaigns);
   } catch (error) {
