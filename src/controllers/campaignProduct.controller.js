@@ -1,5 +1,7 @@
 import { Campaign } from '../models/Campaign.js';
 import { CampaignProduct } from '../models/CampaignProduct.js';
+import { Product } from '../models/Product.js';
+import { ProductGallery } from '../models/ProductGallery.js';
 
 const getByCampaignId = async (req, res) => {
   const { campaignId } = req.params;
@@ -7,7 +9,18 @@ const getByCampaignId = async (req, res) => {
   try {
     const campaignProducts = await CampaignProduct.findAll({
       where: { campaign_id: campaignId },
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
+      attributes: { exclude: ['createdAt', 'updatedAt', 'product_id'] },
+      include: {
+        model: Product,
+        attributes: {
+          exclude: ['createdAt', 'updatedAt'],
+        },
+        include: {
+          model: ProductGallery,
+          attributes: ['url'],
+          where: { order: 1 },
+        },
+      },
     });
 
     return res.json(campaignProducts);
