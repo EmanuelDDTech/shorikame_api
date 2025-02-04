@@ -1,6 +1,8 @@
+import { Op } from 'sequelize';
 import { FilterValueProduct } from '../models/FilterValueProduct.js';
 import { Product } from '../models/Product.js';
 import { ProductGallery } from '../models/ProductGallery.js';
+import { sequelize } from '../database/database.js';
 
 const createProduct = async (req, res) => {
   if (Object.values(req.body).includes('')) {
@@ -87,4 +89,31 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-export { createProduct, getProductById, getProducts, updateProduct, deleteProduct };
+const searchProducts = async (req, res) => {
+  try {
+    const query = req.query.q;
+
+    if (!query)
+      return res.status(400).json({ error: 'Debes proporcionar un término de búsqueda.' });
+
+    const products = await Product.findAll({
+      where: sequelize.literal(
+        `similarity(name, '${query}') > 0.3 OR similarity(sku, '${query}') > 0.3`,
+      ),
+      attributes: {
+        exclude: ['createdAt', 'updatedAt'],
+      },
+      include: {
+        model: ProductGallery,
+        attributes: ['url'],
+        where: { order: 1 },
+      },
+    });
+
+    return res.json(products);
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
+
+export { createProduct, getProductById, getProducts, updateProduct, deleteProduct, searchProducts };
