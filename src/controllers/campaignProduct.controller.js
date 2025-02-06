@@ -93,10 +93,25 @@ const deleteCampaignProduct = async (req, res) => {
   }
 };
 
+const deleteByCampaignId = async (req, res) => {
+  const { isAdmin } = req.user;
+  const { id } = req.params;
+
+  if (!isAdmin) return res.status(403).json({ msg: 'Acción no permitida' });
+
+  try {
+    await CampaignProduct.destroy({ where: { campaign_id: id } });
+    return res.sendStatus(204);
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
+
 export {
   getCampaignProductAll,
   createCampaignProduct,
   getByCampaignId,
   updateCampaignProduct,
   deleteCampaignProduct,
+  deleteByCampaignId,
 };
