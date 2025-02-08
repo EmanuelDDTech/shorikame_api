@@ -48,7 +48,7 @@ const getProducts = async (req, res) => {
 
 const updateProduct = async (req, res) => {
   const { id } = req.params;
-  const { name, description, price, discount, stock, sku, product_category_id } = req.body;
+  const { name, description, price, discount, stock, sku, product_category_id, weight } = req.body;
 
   try {
     const product = await Product.findByPk(id);
@@ -62,6 +62,7 @@ const updateProduct = async (req, res) => {
     product.discount = discount;
     product.stock = stock;
     product.product_category_id = product_category_id;
+    product.weight = weight;
 
     await product.save();
 
