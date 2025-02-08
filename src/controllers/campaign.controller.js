@@ -1,14 +1,33 @@
+import { where } from 'sequelize';
 import { Campaign } from '../models/Campaign.js';
+import { CampaignProduct } from '../models/CampaignProduct.js';
 import { CampaignType } from '../models/CampaignType.js';
+import { Product } from '../models/Product.js';
+import { ProductGallery } from '../models/ProductGallery.js';
 
 const getCampaignAll = async (req, res) => {
   try {
     const campaigns = await Campaign.findAll({
       attributes: { exclude: ['createdAt', 'updatedAt', 'campaign_type_id'] },
-      include: {
-        model: CampaignType,
-        attributes: { exclude: ['createdAt', 'updatedAt'] },
-      },
+      include: [
+        {
+          model: CampaignType,
+          attributes: { exclude: ['createdAt', 'updatedAt'] },
+        },
+        {
+          model: CampaignProduct,
+          attributes: ['id', 'campaign_price'],
+          include: {
+            model: Product,
+            attributes: { exclude: ['createdAt', 'updatedAt'] },
+            include: {
+              model: ProductGallery,
+              attributes: ['url'],
+              where: { order: 1 },
+            },
+          },
+        },
+      ],
     });
     return res.json(campaigns);
   } catch (error) {
