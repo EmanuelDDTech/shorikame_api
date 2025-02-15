@@ -2,6 +2,7 @@ import { Op } from 'sequelize';
 import { FilterValueProduct } from '../models/FilterValueProduct.js';
 import { Product } from '../models/Product.js';
 import { ProductGallery } from '../models/ProductGallery.js';
+import { CampaignProduct } from '../models/CampaignProduct.js';
 import { sequelize } from '../database/database.js';
 
 const createProduct = async (req, res) => {
@@ -22,7 +23,14 @@ const getProductById = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const product = await Product.findByPk(id);
+    const product = await Product.findOne({
+      where: { id },
+      attributes: { exclude: ['createdAt', 'updatedAt', 'discount'] },
+      include: {
+        model: CampaignProduct,
+        attributes: ['campaign_price'],
+      },
+    });
 
     if (!product) return res.status(404).json({ msg: 'Producto no encontrado' });
     return res.json(product);
