@@ -2,6 +2,7 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '../database/database.js';
 import { User } from './User.js';
 import { Address } from './Address.js';
+import { DeliveryCarrier } from './DeliveryCarrier.js';
 
 export const SaleOrder = sequelize.define('sale_order', {
   id: {
@@ -29,6 +30,9 @@ export const SaleOrder = sequelize.define('sale_order', {
   invoice_required: {
     type: DataTypes.BOOLEAN,
   },
+  amount_shipping: {
+    type: DataTypes.DOUBLE,
+  },
 });
 
 User.hasMany(SaleOrder, {
@@ -46,5 +50,14 @@ Address.hasMany(SaleOrder, {
 });
 SaleOrder.belongsTo(Address, {
   foreignKey: 'address_id',
+  targetId: 'id',
+});
+
+DeliveryCarrier.hasMany(SaleOrder, {
+  foreignKey: 'delivery_carrier_id',
+  sourceKey: 'id',
+});
+SaleOrder.belongsTo(DeliveryCarrier, {
+  foreignKey: 'delivery_carrier_id',
   targetId: 'id',
 });
