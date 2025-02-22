@@ -22,4 +22,7 @@ export const DeliveryCarrier = sequelize.define('delivery_carrier', {
   free_over: {
     type: DataTypes.BOOLEAN,
   },
+  image: {
+    type: DataTypes.STRING,
+  },
 });
