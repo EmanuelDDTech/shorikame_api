@@ -29,9 +29,7 @@ const paymentsController = new PaymentsController(client);
 
 const order = async (req, res) => {
   try {
-    // use the cart information passed from the front-end to calculate the order amount detals
-    const { cart, total } = req.body;
-    const { jsonResponse, httpStatusCode } = await createOrder(cart, total.toString());
+    const { jsonResponse, httpStatusCode } = await createOrder(req.body);
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
     console.error('Failed to create order:', error);
@@ -39,7 +37,7 @@ const order = async (req, res) => {
   }
 };
 
-const createOrder = async (cart, total) => {
+const createOrder = async (data) => {
   const collect = {
     body: {
       intent: 'CAPTURE',
@@ -47,19 +45,36 @@ const createOrder = async (cart, total) => {
         {
           amount: {
             currencyCode: 'MXN',
-            value: total,
+            value: (data.itemsTotal + data.shippingAmount).toString(),
             breakdown: {
-              item_total: {
+              itemTotal: {
                 currencyCode: 'MXN',
-                value: total,
+                value: data.itemsTotal.toString(),
               },
               shipping: {
                 currencyCode: 'MXN',
-                value: '0',
+                value: data.shippingAmount.toString(),
+              },
+              insurance: {
+                currencyCode: 'MXN',
+                value: data.insurance ?? '0',
+              },
+              discount: {
+                currencyCode: 'MXN',
+                value: data.discount ?? '0',
               },
             },
           },
-          // items: cart,
+          items: data.cart,
+          shipping: {
+            address: {
+              addressLine1: data.shippingAddress.street,
+              adminArea2: data.shippingAddress.city,
+              adminArea1: data.shippingAddress.state,
+              postalCode: data.shippingAddress.zip,
+              countryCode: 'MX',
+            },
+          },
         },
       ],
     },
