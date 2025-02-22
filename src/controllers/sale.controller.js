@@ -1,6 +1,7 @@
 import { SaleOrder } from '../models/SaleOrder.js';
 import { SaleCart } from '../models/SaleCart.js';
 import { Product } from '../models/Product.js';
+import { Payment } from '../models/Payment.js';
 
 const getOrders = async (req, res) => {
   const { id: userId } = req.user;
@@ -16,16 +17,20 @@ const getOrders = async (req, res) => {
 
 const createOrder = async (req, res) => {
   const { id: userId } = req.user;
-  const { products, ...data } = req.body;
+  const { products, transaction_id, ...data } = req.body;
 
   data.user_id = userId;
 
-  // console.log(data);
-  // console.log(products);
   let saleOrder = {};
 
   try {
     saleOrder = await SaleOrder.create(data);
+
+    console.log(saleOrder.dataValues);
+    await Payment.create({
+      transaction_id,
+      sale_order_id: saleOrder.dataValues.id,
+    });
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }
