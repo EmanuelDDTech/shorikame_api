@@ -11,7 +11,7 @@ const getCart = async (req, res) => {
       attributes: ['id', 'quantity'],
       include: {
         model: Product,
-        attributes: ['id', 'name', 'price', 'stock', 'discount'],
+        attributes: ['id', 'name', 'price', 'stock', 'discount', 'weight'],
         include: {
           model: ProductGallery,
           attributes: ['id', 'order', 'url', 'product_id'],
