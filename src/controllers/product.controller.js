@@ -47,6 +47,7 @@ const getProducts = async (req, res) => {
         attributes: ['id', 'order', 'url', 'product_id'],
         where: { order: 1 },
       },
+      order: [['id', 'ASC']],
     });
     return res.json(products);
   } catch (error) {
