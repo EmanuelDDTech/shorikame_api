@@ -1,7 +1,7 @@
 import { sequelize } from '../database/database.js';
 
 const getProducts = async (req, res) => {
-  const filters = req.query;
+  const { existence, minPrice, maxPrice, ...filters } = req.query;
   let query = ` SELECT DISTINCT 
                 A.id AS id, 
                 A.name AS name,
@@ -34,7 +34,15 @@ const getProducts = async (req, res) => {
     }
   });
 
-  query += `;`;
+  if (existence) {
+    query += ` AND A.stock > 0 `;
+  }
+
+  if (minPrice && maxPrice) {
+    query += ` AND A.price >= '${minPrice}' AND A.price <= '${maxPrice}' `;
+  }
+
+  query += ` ORDER BY A.id ASC; `;
 
   try {
     const products = await sequelize.query(query);
