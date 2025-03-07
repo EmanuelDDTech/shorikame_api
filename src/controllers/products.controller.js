@@ -10,9 +10,11 @@ const getProducts = async (req, res) => {
                 A.price AS price,
                 A.stock AS stock,
                 B.url AS url,
-                B.product_id AS product_id
+                B.product_id AS product_id,
+                C.campaign_price AS discount
                 FROM public.products AS A
 	              INNER JOIN public.product_galleries AS B ON B.product_id = A.id
+                LEFT JOIN public.campaign_products AS C ON C.product_id = A.id
                 WHERE B.order = 1 `;
 
   Object.entries(filters).forEach(([key, value]) => {
