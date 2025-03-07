@@ -2,6 +2,7 @@ import { SaleOrder } from '../models/SaleOrder.js';
 import { SaleCart } from '../models/SaleCart.js';
 import { Product } from '../models/Product.js';
 import { Payment } from '../models/Payment.js';
+import { sendEmailSaleConfirmation } from '../emails/saleEmailService.js';
 
 const getOrders = async (req, res) => {
   const { id: userId } = req.user;
@@ -20,13 +21,12 @@ const createOrder = async (req, res) => {
   const { products, transaction_id, ...data } = req.body;
 
   data.user_id = userId;
-
   let saleOrder = {};
+  let orderProducts = [];
 
   try {
     saleOrder = await SaleOrder.create(data);
 
-    console.log(saleOrder.dataValues);
     await Payment.create({
       transaction_id,
       sale_order_id: saleOrder.dataValues.id,
@@ -36,7 +36,7 @@ const createOrder = async (req, res) => {
   }
 
   try {
-    products.forEach(async (sale_line) => {
+    for (const sale_line of products) {
       const product = await Product.findOne({
         where: { id: sale_line.productId },
         attributes: ['id', 'name', 'sku', 'price', 'stock'],
@@ -51,11 +51,20 @@ const createOrder = async (req, res) => {
 
       sale_line.saleOrderId = saleOrder.id;
       await SaleCart.create(sale_line);
-    });
+
+      const productData = {
+        name: product.name,
+        quantity: sale_line.quantity,
+        price: sale_line.price_unit,
+      };
+
+      orderProducts.push(productData);
+    }
+
+    sendEmailSaleConfirmation({ user: req.user, order: saleOrder, items: orderProducts });
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }
-
   return res.json({ order: saleOrder });
 };
 
