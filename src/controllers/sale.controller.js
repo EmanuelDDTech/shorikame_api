@@ -3,12 +3,31 @@ import { SaleCart } from '../models/SaleCart.js';
 import { Product } from '../models/Product.js';
 import { Payment } from '../models/Payment.js';
 import { sendEmailSaleConfirmation } from '../emails/saleEmailService.js';
+import { order } from './paypal.controller.js';
+import { ProductGallery } from '../models/ProductGallery.js';
 
 const getOrders = async (req, res) => {
   const { id: userId } = req.user;
 
   try {
-    const saleOrders = await SaleOrder.findAll({ where: { user_id: userId } });
+    const saleOrders = await SaleOrder.findAll({
+      where: { user_id: userId },
+      attributes: { exclude: ['updatedAt'] },
+      order: [['id', 'DESC']],
+      include: {
+        model: SaleCart,
+        attributes: ['quantity', 'price_unit', 'subtotal'],
+        include: {
+          model: Product,
+          attributes: ['id', 'name'],
+          include: {
+            model: ProductGallery,
+            attributes: ['url'],
+            where: { order: 1 },
+          },
+        },
+      },
+    });
 
     return res.json(saleOrders);
   } catch (error) {
