@@ -5,13 +5,14 @@ import { Payment } from '../models/Payment.js';
 import { sendEmailSaleConfirmation } from '../emails/saleEmailService.js';
 import { order } from './paypal.controller.js';
 import { ProductGallery } from '../models/ProductGallery.js';
+import { Address } from '../models/Address.js';
 
 const getOrders = async (req, res) => {
-  const { id: userId } = req.user;
+  const { id: userId, isAdmin } = req.user;
 
   try {
     const saleOrders = await SaleOrder.findAll({
-      where: { user_id: userId },
+      where: isAdmin ? {} : { user_id: userId },
       attributes: { exclude: ['updatedAt'] },
       order: [['id', 'DESC']],
       include: {
@@ -89,23 +90,33 @@ const createOrder = async (req, res) => {
 
 const getOrderById = async (req, res) => {
   const { id } = req.params;
-  const { id: userId } = req.user;
+  const { id: userId, isAdmin } = req.user;
 
   try {
     const saleOrder = await SaleOrder.findOne({
       where: { id },
       attributes: { exclude: ['createdAt', 'updatedAt'] },
-      include: {
-        model: SaleCart,
-        attributes: { exclude: ['createdAt', 'updatedAt'] },
-        include: {
-          model: Product,
-          attributes: { exclude: ['createdAt', 'updatedAt'] },
+      include: [
+        {
+          model: SaleCart,
+          attributes: ['quantity', 'price_unit', 'subtotal'],
+          include: {
+            model: Product,
+            attributes: ['id', 'name'],
+            include: {
+              model: ProductGallery,
+              attributes: ['url'],
+              where: { order: 1 },
+            },
+          },
         },
-      },
+        {
+          model: Address,
+        },
+      ],
     });
 
-    if (saleOrder.user_id !== userId) {
+    if (saleOrder.user_id !== userId && !isAdmin) {
       return res.status(403).json({ msg: 'No puede acceder a esta orden' });
     }
 
