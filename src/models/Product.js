@@ -12,6 +12,11 @@ export const Product = sequelize.define('products', {
     type: DataTypes.STRING,
     allowNull: false,
   },
+  active: {
+    type: DataTypes.BOOLEAN,
+    allowNull: false,
+    defaultValue: false,
+  },
   sku: {
     type: DataTypes.STRING,
     allowNull: true,

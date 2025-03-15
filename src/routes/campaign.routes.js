@@ -3,6 +3,7 @@ import {
   createCampaign,
   deleteCampaign,
   getCampaignAll,
+  getCampaignAllAdmin,
   getCampaignById,
   updateCampaign,
 } from '../controllers/campaign.controller.js';

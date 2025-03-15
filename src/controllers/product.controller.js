@@ -56,22 +56,30 @@ const getProducts = async (req, res) => {
 };
 
 const updateProduct = async (req, res) => {
+  const { user } = req;
   const { id } = req.params;
-  const { name, description, price, discount, stock, sku, product_category_id, weight } = req.body;
+  const { name, description, price, discount, stock, sku, product_category_id, weight, active } =
+    req.body;
+
+  if (!user.isAdmin) {
+    const error = new Error('Acción no válida');
+    return res.status(403).json({ msg: error.message });
+  }
 
   try {
     const product = await Product.findByPk(id);
 
     if (!product) return res.status(404).json({ msg: 'Producto no encontrado' });
 
-    product.name = name;
-    product.sku = sku;
-    product.description = description;
-    product.price = price;
-    product.discount = discount;
-    product.stock = stock;
-    product.product_category_id = product_category_id;
-    product.weight = weight;
+    product.name = name ?? product.name;
+    product.sku = sku ?? product.sky;
+    product.description = description ?? product.description;
+    product.price = price ?? product.price;
+    product.discount = discount ?? product.discount;
+    product.stock = stock ?? product.stock;
+    product.product_category_id = product_category_id ?? product.product_category_id;
+    product.weight = weight ?? product.weight;
+    product.active = active ?? product.active;
 
     await product.save();
 
