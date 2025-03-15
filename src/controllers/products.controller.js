@@ -15,7 +15,8 @@ const getProducts = async (req, res) => {
                 FROM public.products AS A
 	              INNER JOIN public.product_galleries AS B ON B.product_id = A.id
                 LEFT JOIN public.campaign_products AS C ON C.product_id = A.id
-                WHERE B.order = 1 `;
+                WHERE B.order = 1 
+                AND A.active = true `;
 
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== '') {
