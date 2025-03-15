@@ -7,7 +7,6 @@ const createProductGallery = async (req, res) => {
     return res.status(400).json({ msg: error.message });
   }
 
-  console.log(req.body);
   const { images, product_id } = req.body;
   const result = [];
 
