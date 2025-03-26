@@ -26,10 +26,17 @@ const getProductById = async (req, res) => {
     const product = await Product.findOne({
       where: { id },
       attributes: { exclude: ['createdAt', 'updatedAt', 'discount'] },
-      include: {
-        model: CampaignProduct,
-        attributes: ['campaign_price'],
-      },
+      include: [
+        {
+          model: CampaignProduct,
+          attributes: ['campaign_price'],
+        },
+        {
+          model: ProductGallery,
+          attributes: ['url'],
+          where: { order: 1 },
+        },
+      ],
     });
 
     if (!product) return res.status(404).json({ msg: 'Producto no encontrado' });
