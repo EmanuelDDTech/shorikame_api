@@ -117,13 +117,16 @@ const deleteProduct = async (req, res) => {
 const searchProducts = async (req, res) => {
   try {
     const query = req.query.q;
+    const admin = req.query.admin;
 
     if (!query)
       return res.status(400).json({ error: 'Debes proporcionar un término de búsqueda.' });
 
     const products = await Product.findAll({
       where: sequelize.literal(
-        `similarity(name, '${query}') > 0.3 OR similarity(sku, '${query}') > 0.3`,
+        `(similarity(name, '${query}') > 0.2 OR similarity(sku, '${query}') > 0.2) ${
+          admin ? '' : 'AND active = true'
+        }`,
       ),
       attributes: {
         exclude: ['createdAt', 'updatedAt'],
