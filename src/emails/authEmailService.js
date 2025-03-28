@@ -97,7 +97,7 @@ function renderHTML(name, token) {
           <body>
               <div class="container">
                   <div class="header">
-                      <img src="https://firebasestorage.googleapis.com/v0/b/shorikame-7d2b4.appspot.com/o/assets%2Fshorikame-logo-edited.webp?alt=media&token=b516cc10-fb19-4d28-a80c-4ba598c10d92" alt="Shorikame Logo">
+                      <img src="https://firebasestorage.googleapis.com/v0/b/shorikame-7d2b4.appspot.com/o/assets%2Fkame_01.png?alt=media&token=9c1e6563-2477-4960-8ac0-efffbd5e0634" alt="Shorikame Logo">
                   </div>
                   <div class="content">
                       <h2>Hola ${name}</h2>
