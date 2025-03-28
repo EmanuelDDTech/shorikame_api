@@ -35,6 +35,9 @@ const findAvailable = async (req, res) => {
       deliveries.push(freeDelivery);
     }
 
+    const localDelivery = await findLocalDelivery();
+    if (localDelivery) deliveries.push(localDelivery);
+
     return res.json(deliveries);
   } catch (error) {
     return res.status(500).json({ msg: error.message });
@@ -46,6 +49,19 @@ const findFreeDelivery = async () => {
     return await DeliveryCarrier.findOne({
       where: {
         free_over: true,
+      },
+    });
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
+
+const findLocalDelivery = async () => {
+  try {
+    return await DeliveryCarrier.findOne({
+      where: {
+        free_over: true,
+        servicelevel: 'local',
       },
     });
   } catch (error) {
