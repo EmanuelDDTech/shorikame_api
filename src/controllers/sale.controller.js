@@ -47,10 +47,12 @@ const createOrder = async (req, res) => {
   try {
     saleOrder = await SaleOrder.create(data);
 
-    await Payment.create({
-      transaction_id,
-      sale_order_id: saleOrder.dataValues.id,
-    });
+    if (transaction_id) {
+      await Payment.create({
+        transaction_id,
+        sale_order_id: saleOrder.dataValues.id,
+      });
+    }
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }

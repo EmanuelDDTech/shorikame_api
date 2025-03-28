@@ -15,7 +15,7 @@ export const SaleOrder = sequelize.define('sale_order', {
     allowNull: true,
   },
   state: {
-    type: DataTypes.ENUM('pending', 'completed', 'canceled'),
+    type: DataTypes.ENUM('pendiente', 'completado', 'cancelado', 'pago pendiente'),
   },
   require_payment: {
     type: DataTypes.BOOLEAN,
