@@ -21,6 +21,7 @@ import campaignAdminRoutes from './routes/campaignAdmin.routes.js';
 import campaignProductRoutes from './routes/campaignProducts.routes.js';
 import deliveryRoutes from './routes/delivery.routes.js';
 import featuredProductRoutes from './routes/featuredProduct.routes.js';
+import discountCodeRoutes from './routes/discountCode.routes.js';
 
 const app = express();
 
@@ -65,5 +66,6 @@ app.use('/campanas-admin', campaignAdminRoutes);
 app.use('/campanas-productos', campaignProductRoutes);
 app.use('/delivery', deliveryRoutes);
 app.use('/productos-destacados', featuredProductRoutes);
+app.use('/codigo-descuento', discountCodeRoutes);
 
 export default app;
