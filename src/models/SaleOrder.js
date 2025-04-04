@@ -3,6 +3,7 @@ import { sequelize } from '../database/database.js';
 import { User } from './User.js';
 import { Address } from './Address.js';
 import { DeliveryCarrier } from './DeliveryCarrier.js';
+import { DiscountCode } from './DiscountCode.js';
 
 export const SaleOrder = sequelize.define('sale_order', {
   id: {
@@ -26,6 +27,9 @@ export const SaleOrder = sequelize.define('sale_order', {
   is_payed: {
     type: DataTypes.BOOLEAN,
     allowNull: false,
+  },
+  discount_amount: {
+    type: DataTypes.DOUBLE,
   },
   invoice_required: {
     type: DataTypes.BOOLEAN,
@@ -59,5 +63,14 @@ DeliveryCarrier.hasMany(SaleOrder, {
 });
 SaleOrder.belongsTo(DeliveryCarrier, {
   foreignKey: 'delivery_carrier_id',
+  targetId: 'id',
+});
+
+DiscountCode.hasMany(SaleOrder, {
+  foreignKey: 'discount_code_id',
+  sourceKey: 'id',
+});
+SaleOrder.belongsTo(DiscountCode, {
+  foreignKey: 'discount_code_id',
   targetId: 'id',
 });
