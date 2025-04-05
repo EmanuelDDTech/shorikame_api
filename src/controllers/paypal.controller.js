@@ -45,7 +45,7 @@ const createOrder = async (data) => {
         {
           amount: {
             currencyCode: 'MXN',
-            value: (data.itemsTotal + data.shippingAmount).toString(),
+            value: (data.itemsTotal + data.shippingAmount - data.discount).toString(),
             breakdown: {
               itemTotal: {
                 currencyCode: 'MXN',
@@ -61,7 +61,7 @@ const createOrder = async (data) => {
               },
               discount: {
                 currencyCode: 'MXN',
-                value: data.discount ?? '0',
+                value: data.discount ? data.discount.toString() : '0',
               },
             },
           },
