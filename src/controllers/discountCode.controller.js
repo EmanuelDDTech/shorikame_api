@@ -9,7 +9,7 @@ const getDiscountCodes = async (req, res) => {
   }
 
   try {
-    const discountCodes = await DiscountCode.findAll();
+    const discountCodes = await DiscountCode.findAll({ order: [['id', 'DESC']] });
     return res.json(discountCodes);
   } catch (error) {
     return res.status(500).json({ msg: error.message });
