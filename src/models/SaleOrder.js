@@ -21,6 +21,9 @@ export const SaleOrder = sequelize.define('sale_order', {
   require_payment: {
     type: DataTypes.BOOLEAN,
   },
+  amount_subtotal: {
+    type: DataTypes.DOUBLE,
+  },
   amount_total: {
     type: DataTypes.DOUBLE,
   },
