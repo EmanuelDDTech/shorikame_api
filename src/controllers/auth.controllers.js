@@ -50,7 +50,7 @@ const register = async (req, res) => {
     const hashPass = await hashPassword(password);
     const newUser = await User.create({ name, email, password: hashPass });
 
-    sendEmailVerification({ name: newUser.name, email: newUser.email, token: newUser.token });
+    await sendEmailVerification({ name: newUser.name, email: newUser.email, token: newUser.token });
 
     return res.json({ msg: 'Revisa el correo que te enviamos para la verificación de la cuenta.' });
   } catch (error) {
