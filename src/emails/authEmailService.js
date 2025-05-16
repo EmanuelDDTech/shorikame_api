@@ -1,7 +1,7 @@
 import { createTransport } from '../config/nodemailer.js';
 import { Resend } from 'resend';
 
-const resend = new Resend('re_hnByogcc_7oCRps9F1RScuETkurE6TiDn');
+const resend = new Resend(process.env.EMAIL_RESEND);
 
 export async function sendEmailVerification({ name, email, token }) {
   // const transporter = createTransport(
