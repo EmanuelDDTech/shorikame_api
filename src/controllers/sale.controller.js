@@ -83,7 +83,7 @@ const createOrder = async (req, res) => {
       orderProducts.push(productData);
     }
 
-    sendEmailSaleConfirmation({ user: req.user, order: saleOrder, items: orderProducts });
+    await sendEmailSaleConfirmation({ user: req.user, order: saleOrder, items: orderProducts });
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }
