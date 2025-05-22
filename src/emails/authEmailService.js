@@ -45,7 +45,7 @@ function renderHTML(name, token) {
   const htmlEmail = `<head>
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>Confirmación de Pedido</title>
+              <title>Confirmación de Cuenta</title>
               <style>
                   body {
                       font-family: Arial, sans-serif;
@@ -101,7 +101,7 @@ function renderHTML(name, token) {
                   </div>
                   <div class="content">
                       <h2>Hola ${name}</h2>
-                      <p>Confirma tu cuenta en <strong>ShoriKameCards</strong>. Tu pedido está en espera hasta que confirmemos el pago.</p>
+                      <p>Confirma tu cuenta en <strong>ShoriKameCards</strong>. Tu cuenta está en espera hasta que confirmemos el correo.</p>
                       <p>Tú cuenta está casi lista, solo deber confirmarla en el siguiente enlace: <a href="${process.env.FRONTEND_URL}/auth/confirmar-cuenta/${token}">Confirmar cuenta.</a></p>
 
                       <p>Si tú no creaste esta cuenta, puedes ignorar este mensaje.</p>
