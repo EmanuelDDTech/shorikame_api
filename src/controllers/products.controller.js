@@ -9,6 +9,7 @@ const getProducts = async (req, res) => {
                 A.slug AS slug,
                 A.price AS price,
                 A.stock AS stock,
+                A.stock_visible AS stock_visible,
                 B.url AS url,
                 B.product_id AS product_id,
                 C.campaign_price AS discount
