@@ -65,8 +65,18 @@ const getProducts = async (req, res) => {
 const updateProduct = async (req, res) => {
   const { user } = req;
   const { id } = req.params;
-  const { name, description, price, discount, stock, sku, product_category_id, weight, active } =
-    req.body;
+  const {
+    name,
+    description,
+    price,
+    discount,
+    stock,
+    stock_visible,
+    sku,
+    product_category_id,
+    weight,
+    active,
+  } = req.body;
 
   if (!user.isAdmin) {
     const error = new Error('Acción no válida');
@@ -84,9 +94,12 @@ const updateProduct = async (req, res) => {
     product.price = price ?? product.price;
     product.discount = discount ?? product.discount;
     product.stock = stock ?? product.stock;
+    product.stock_visible = stock_visible ?? product.stock_visible;
     product.product_category_id = product_category_id ?? product.product_category_id;
     product.weight = weight ?? product.weight;
     product.active = active ?? product.active;
+
+    console.log(product);
 
     await product.save();
 

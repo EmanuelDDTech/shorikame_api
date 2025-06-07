@@ -40,6 +40,10 @@ export const Product = sequelize.define('products', {
     type: DataTypes.INTEGER,
     defaultValue: 0,
   },
+  stock_visible: {
+    type: DataTypes.BOOLEAN,
+    default: true,
+  },
   weight: {
     type: DataTypes.DOUBLE,
   },
