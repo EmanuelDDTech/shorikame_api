@@ -6,13 +6,15 @@ import { sendEmailSaleConfirmation } from '../emails/saleEmailService.js';
 import { order } from './paypal.controller.js';
 import { ProductGallery } from '../models/ProductGallery.js';
 import { Address } from '../models/Address.js';
+import { User } from '../models/User.js';
+import { DeliveryCarrier } from '../models/DeliveryCarrier.js';
 
 const getOrders = async (req, res) => {
-  const { id: userId, isAdmin } = req.user;
+  const { id: userId } = req.user;
 
   try {
     const saleOrders = await SaleOrder.findAll({
-      where: isAdmin ? {} : { user_id: userId },
+      where: { user_id: userId },
       attributes: { exclude: ['updatedAt'] },
       order: [['id', 'DESC']],
       include: {
@@ -28,6 +30,47 @@ const getOrders = async (req, res) => {
           },
         },
       },
+    });
+
+    return res.json(saleOrders);
+  } catch (error) {
+    return res.status(500).json({ msg: error.message });
+  }
+};
+
+const getOrdersAdmin = async (req, res) => {
+  console.log('Llegando a la función');
+  const { isAdmin } = req.user;
+
+  if (!isAdmin) {
+    const error = new Error('Acción no válida');
+    return res.status(403).json({ msg: error.message });
+  }
+
+  try {
+    const saleOrders = await SaleOrder.findAll({
+      where: {},
+      attributes: { exclude: ['updatedAt'] },
+      order: [['id', 'DESC']],
+      include: [
+        {
+          model: SaleCart,
+          attributes: ['quantity', 'price_unit', 'subtotal'],
+          include: {
+            model: Product,
+            attributes: ['id', 'name'],
+            include: {
+              model: ProductGallery,
+              attributes: ['url'],
+              where: { order: 1 },
+            },
+          },
+        },
+        {
+          model: User,
+          attributes: ['id', 'name', 'email'],
+        },
+      ],
     });
 
     return res.json(saleOrders);
@@ -115,6 +158,14 @@ const getOrderById = async (req, res) => {
         {
           model: Address,
         },
+        {
+          model: User,
+          attributes: ['id', 'name', 'email'],
+        },
+        {
+          model: DeliveryCarrier,
+          attributes: ['id', 'name'],
+        },
       ],
     });
 
@@ -150,4 +201,4 @@ const updateOrder = async (req, res) => {
   }
 };
 
-export { getOrders, createOrder, getOrderById, updateOrder };
+export { getOrders, getOrdersAdmin, createOrder, getOrderById, updateOrder };
