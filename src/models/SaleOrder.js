@@ -21,6 +21,9 @@ export const SaleOrder = sequelize.define('sale_order', {
   require_payment: {
     type: DataTypes.BOOLEAN,
   },
+  payment_method: {
+    type: DataTypes.ENUM('paypal', 'transferencia'),
+  },
   amount_subtotal: {
     type: DataTypes.DOUBLE,
   },
