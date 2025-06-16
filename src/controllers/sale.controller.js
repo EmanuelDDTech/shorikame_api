@@ -181,14 +181,14 @@ const getOrderById = async (req, res) => {
 
 const updateOrder = async (req, res) => {
   const { id } = req.params;
-  const { id: userId } = req.user;
+  const { id: userId, isAdmin } = req.user;
   let updateState = false;
   let updateType = '';
 
   try {
     const saleOrder = await SaleOrder.findOne({ where: { id } });
 
-    if (saleOrder.user_id !== userId) {
+    if (saleOrder.user_id !== userId && !isAdmin) {
       return res.status(403).json({ msg: 'No puede acceder a esta orden' });
     }
 
