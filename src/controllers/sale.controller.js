@@ -2,7 +2,7 @@ import { SaleOrder } from '../models/SaleOrder.js';
 import { SaleCart } from '../models/SaleCart.js';
 import { Product } from '../models/Product.js';
 import { Payment } from '../models/Payment.js';
-import { sendEmailSaleConfirmation } from '../emails/saleEmailService.js';
+import { sendEmailSaleConfirmation, sendEmailSaleUpdate } from '../emails/saleEmailService.js';
 import { order } from './paypal.controller.js';
 import { ProductGallery } from '../models/ProductGallery.js';
 import { Address } from '../models/Address.js';
@@ -182,6 +182,8 @@ const getOrderById = async (req, res) => {
 const updateOrder = async (req, res) => {
   const { id } = req.params;
   const { id: userId } = req.user;
+  let updateState = false;
+  let updateType = '';
 
   try {
     const saleOrder = await SaleOrder.findOne({ where: { id } });
@@ -190,10 +192,18 @@ const updateOrder = async (req, res) => {
       return res.status(403).json({ msg: 'No puede acceder a esta orden' });
     }
 
+    if (req.body.state !== saleOrder.state) {
+      updateState = true;
+      updateType = req.body.state;
+    }
+
     saleOrder.state = req.body.state || saleOrder.state;
     saleOrder.is_payed = req.body.is_payed || saleOrder.is_payed;
 
     await saleOrder.save();
+    if (updateState) {
+      await sendEmailSaleUpdate(req.body);
+    }
 
     return res.json({ msg: 'Carrito actualizado correctamente' });
   } catch (error) {
