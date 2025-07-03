@@ -31,8 +31,15 @@ const getFiltersCategory = async (req, res) => {
     include: {
       model: FilterGroup,
       attributes: ['id', 'name', 'slug'],
-      include: { model: FilterValue, attributes: ['id', 'name', 'slug'] },
+      include: {
+        model: FilterValue,
+        attributes: ['id', 'name', 'slug'],
+      },
     },
+    order: [
+      [FilterGroup, 'id', 'ASC'],
+      [FilterGroup, FilterValue, 'order', 'DESC'],
+    ],
   });
 
   return res.json(filtersCategory);
