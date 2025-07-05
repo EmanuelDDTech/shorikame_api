@@ -7,11 +7,6 @@ const client = new OAuth2Client(
   '409428805948-oabs342a3r6b7e21q6922d5buubkiph0.apps.googleusercontent.com',
 );
 
-const getUsers = async (req, res) => {
-  const users = await User.findAll();
-  return res.json(users);
-};
-
 const sendUser = async (req, res) => {
   const { user } = req;
   if (!user) {
@@ -171,14 +166,4 @@ const updateUser = async (req, res) => {
   }
 };
 
-export {
-  getUsers,
-  sendUser,
-  register,
-  deleteUser,
-  updateUser,
-  verifyAccount,
-  login,
-  googleLogin,
-  sendAdmin,
-};
+export { sendUser, register, deleteUser, updateUser, verifyAccount, login, googleLogin, sendAdmin };
