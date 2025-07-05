@@ -22,6 +22,7 @@ import campaignProductRoutes from './routes/campaignProducts.routes.js';
 import deliveryRoutes from './routes/delivery.routes.js';
 import featuredProductRoutes from './routes/featuredProduct.routes.js';
 import discountCodeRoutes from './routes/discountCode.routes.js';
+import usersRoutes from './routes/users.routes.js';
 
 const app = express();
 
@@ -67,5 +68,6 @@ app.use('/campanas-productos', campaignProductRoutes);
 app.use('/delivery', deliveryRoutes);
 app.use('/productos-destacados', featuredProductRoutes);
 app.use('/codigo-descuento', discountCodeRoutes);
+app.use('/users', usersRoutes);
 
 export default app;
