@@ -4,7 +4,6 @@ import {
   verifyAccount,
   deleteUser,
   sendUser,
-  getUsers,
   updateUser,
   login,
   sendAdmin,
@@ -23,7 +22,6 @@ router.post('/google', googleLogin);
 router.get('/user', authMiddleware, sendUser);
 router.get('/admin', authMiddleware, sendAdmin);
 
-// router.route('/users').get(getUsers).post(register);
 // router.route('/users/:id').get(getUserById).delete(deleteUser).put(updateUser);
 
 export default router;
