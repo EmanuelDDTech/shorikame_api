@@ -2,6 +2,7 @@ import { Cart } from '../models/Cart.js';
 import { Product } from '../models/Product.js';
 import { ProductGallery } from '../models/ProductGallery.js';
 import { User } from '../models/User.js';
+import { order } from './paypal.controller.js';
 
 const getUsers = async (req, res) => {
   const { user } = req;
@@ -17,7 +18,9 @@ const getUsers = async (req, res) => {
   }
 
   try {
-    const users = await User.findAll();
+    const users = await User.findAll({
+      order: [['id', 'DESC']],
+    });
     return res.json(users);
   } catch (error) {
     return res.status(500).json({ msg: error.message });
