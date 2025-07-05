@@ -119,7 +119,12 @@ const googleLogin = async (req, res) => {
     } else {
       const uniqueId = Date.now().toString(32) + Math.random().toString(32).substring(2);
       const password = await hashPassword(uniqueId);
-      const newUser = await User.create({ name: payload.name, email: payload.email, password });
+      const newUser = await User.create({
+        name: payload.name,
+        email: payload.email,
+        password,
+        verified: true,
+      });
 
       const token = generateJWT(newUser.id);
       return res.json({ token });
