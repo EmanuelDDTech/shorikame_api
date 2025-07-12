@@ -39,8 +39,8 @@ const getOrders = async (req, res) => {
 };
 
 const getOrdersAdmin = async (req, res) => {
-  console.log('Llegando a la función');
   const { isAdmin } = req.user;
+  const { limit = 10, page = 1 } = req.query;
 
   if (!isAdmin) {
     const error = new Error('Acción no válida');
@@ -48,9 +48,23 @@ const getOrdersAdmin = async (req, res) => {
   }
 
   try {
-    const saleOrders = await SaleOrder.findAll({
+    const ids = await SaleOrder.findAll({
+      attributes: ['id'],
       where: {},
-      attributes: { exclude: ['updatedAt'] },
+      order: [['id', 'DESC']],
+      limit: limit,
+      offset: limit * (page - 1),
+    });
+
+    const idsList = ids.map((row) => row.id);
+
+    if (!idsList.length) return [];
+
+    const saleOrders = await SaleOrder.findAll({
+      where: { id: idsList },
+      attributes: {
+        exclude: ['updatedAt'],
+      },
       order: [['id', 'DESC']],
       include: [
         {
