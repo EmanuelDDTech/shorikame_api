@@ -6,6 +6,7 @@ import { order } from './paypal.controller.js';
 
 const getUsers = async (req, res) => {
   const { user } = req;
+  const { limit = 20, page = 1 } = req.query;
 
   if (!user) {
     const error = new Error('Token no válido');
@@ -20,6 +21,8 @@ const getUsers = async (req, res) => {
   try {
     const users = await User.findAll({
       order: [['id', 'DESC']],
+      limit: limit,
+      offset: limit * (page - 1),
     });
     return res.json(users);
   } catch (error) {
