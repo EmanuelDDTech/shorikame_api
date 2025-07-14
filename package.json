@@ -3,6 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "type": "module",
+  "imports": {
+    "#src/*": "./src/*",
+    "#modules/*": "./src/modules/*",
+    "#middleware/*": "./src/middleware/*"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node --env-file .env src/index.js",
@@ -21,11 +26,14 @@
   "homepage": "https://github.com/EmanuelDDTech/shorikame_api#readme",
   "description": "",
   "dependencies": {
+    "@date-fns/utc": "^2.1.0",
     "@paypal/paypal-server-sdk": "^0.6.1",
     "bcrypt": "^5.1.1",
     "body-parser": "^1.20.3",
     "colors": "^1.4.0",
     "cors": "^2.8.5",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "express": "^4.21.0",
     "google-auth-library": "^9.15.0",
     "jsonwebtoken": "^9.0.2",
