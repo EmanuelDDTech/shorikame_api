@@ -1,7 +1,7 @@
 import { sequelize } from '#src/database/database.js';
 
 const getProducts = async (req, res) => {
-  const { existence, minPrice, maxPrice, ...filters } = req.query;
+  const { existence, minPrice, maxPrice, page = 1, limit = 10, ...filters } = req.query;
   let query = ` SELECT DISTINCT 
                 A.id AS id, 
                 A.name AS name,
@@ -46,12 +46,19 @@ const getProducts = async (req, res) => {
     query += ` AND A.price >= '${minPrice}' AND A.price <= '${maxPrice}' `;
   }
 
-  query += ` ORDER BY A.id ASC; `;
+  query += ` ORDER BY A.id ASC
+            LIMIT ${limit} OFFSET ${(page - 1) * limit}; `;
 
   try {
     const products = await sequelize.query(query);
 
-    return res.json(products[0]);
+    const data = {
+      data: products[0],
+      nextPage: products[0].length === Number(limit) ? Number(page) + 1 : null,
+      hasNextPage: products[0].length === Number(limit),
+    };
+
+    return res.json(data);
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }
