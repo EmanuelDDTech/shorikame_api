@@ -1,7 +1,9 @@
 import { sequelize } from '#src/database/database.js';
 
 const getProducts = async (req, res) => {
-  const { existence, minPrice, maxPrice, page = 1, limit = 10, ...filters } = req.query;
+  const user = req.user;
+
+  const { existence, minPrice, maxPrice, page = 1, limit = 10, active, ...filters } = req.query;
   let query = ` SELECT DISTINCT 
                 A.id AS id, 
                 A.name AS name,
@@ -10,6 +12,7 @@ const getProducts = async (req, res) => {
                 A.price AS price,
                 A.stock AS stock,
                 A.stock_visible AS stock_visible,
+                A.active AS active,
                 B.url AS url,
                 B.product_id AS product_id,
                 C.campaign_price AS discount
@@ -17,7 +20,13 @@ const getProducts = async (req, res) => {
 	              INNER JOIN public.product_galleries AS B ON B.product_id = A.id
                 LEFT JOIN public.campaign_products AS C ON C.product_id = A.id
                 WHERE B.order = 1 
-                AND A.active = true `;
+              `;
+
+  if (!user?.isAdmin) {
+    query += `
+      AND A.active = true
+    `;
+  }
 
   Object.entries(filters).forEach(([key, value]) => {
     if (value !== '') {
