@@ -3,7 +3,17 @@ import { sequelize } from '#src/database/database.js';
 const getProducts = async (req, res) => {
   const user = req.user;
 
-  const { existence, minPrice, maxPrice, page = 1, limit = 10, active, ...filters } = req.query;
+  const {
+    existence,
+    minPrice,
+    maxPrice,
+    page = 1,
+    limit = 10,
+    active,
+    order = 'id',
+    orderDirection = 'DESC',
+    ...filters
+  } = req.query;
   let query = ` SELECT DISTINCT 
                 A.id AS id, 
                 A.name AS name,
@@ -55,7 +65,7 @@ const getProducts = async (req, res) => {
     query += ` AND A.price >= '${minPrice}' AND A.price <= '${maxPrice}' `;
   }
 
-  query += ` ORDER BY A.id ASC
+  query += ` ORDER BY ${order} ${orderDirection}
             LIMIT ${limit} OFFSET ${(page - 1) * limit}; `;
 
   try {
