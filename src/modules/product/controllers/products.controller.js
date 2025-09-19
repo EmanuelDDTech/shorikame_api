@@ -10,7 +10,7 @@ const getProducts = async (req, res) => {
     page = 1,
     limit = 10,
     active,
-    order = 'id',
+    orderBy = 'created_at',
     orderDirection = 'DESC',
     ...filters
   } = req.query;
@@ -25,7 +25,8 @@ const getProducts = async (req, res) => {
                 A.active AS active,
                 B.url AS url,
                 B.product_id AS product_id,
-                C.campaign_price AS discount
+                C.campaign_price AS discount,
+                A."createdAt" AS created_at
                 FROM public.products AS A
 	              INNER JOIN public.product_galleries AS B ON B.product_id = A.id
                 LEFT JOIN public.campaign_products AS C ON C.product_id = A.id
@@ -65,7 +66,7 @@ const getProducts = async (req, res) => {
     query += ` AND A.price >= '${minPrice}' AND A.price <= '${maxPrice}' `;
   }
 
-  query += ` ORDER BY ${order} ${orderDirection}
+  query += ` ORDER BY ${orderBy} ${orderDirection}
             LIMIT ${limit} OFFSET ${(page - 1) * limit}; `;
 
   try {
