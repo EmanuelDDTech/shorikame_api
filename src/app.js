@@ -17,7 +17,7 @@ import bannerRoutes from '#modules/banner/routes/banner.routes.js';
 import productsRoutes from '#modules/product/routes/products.routes.js';
 import carritoRoutes from '#modules/cart/routes/carrito.routes.js';
 import addressRoutes from '#modules/address/routes/address.routes.js';
-import paypalRoutes from '#modules/paypal/routes/paypal.routes.js';
+import paypalRoutes from '#modules/payments/routes/paypal.routes.js';
 import saleRoutes from '#modules/sale/routes/sale.routes.js';
 import campaignTypeRoutes from '#modules/campaign/routes/campaignType.routes.js';
 import campaignRoutes from '#modules/campaign/routes/campaign.routes.js';

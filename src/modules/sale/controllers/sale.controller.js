@@ -19,8 +19,8 @@ import { sendEmailSaleConfirmation, sendEmailSaleUpdate } from '#src/emails/sale
 import { SaleOrder } from '#modules/sale/models/SaleOrder.js';
 import { SaleCart } from '#modules/sale/models/SaleCart.js';
 import { Product } from '#modules/product/models/Product.js';
-import { Payment } from '#modules/paypal/models/Payment.js';
-import { order } from '#modules/paypal/controllers/paypal.controller.js';
+import { Payment } from '#modules/payments/models/Payment.js';
+import { order } from '#modules/payments/controllers/paypal.controller.js';
 import { ProductGallery } from '#modules/product/models/ProductGallery.js';
 import { Address } from '#modules/address/models/Address.js';
 import { User } from '#modules/user/models/User.js';

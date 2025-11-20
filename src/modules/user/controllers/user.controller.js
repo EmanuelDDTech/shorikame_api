@@ -2,7 +2,7 @@ import { Cart } from '#src/modules/cart/models/Cart.js';
 import { Product } from '#modules/product/models/Product.js';
 import { ProductGallery } from '#modules/product/models/ProductGallery.js';
 import { User } from '#modules/user/models/User.js';
-import { order } from '#modules/paypal/controllers/paypal.controller.js';
+import { order } from '#modules/payments/controllers/paypal.controller.js';
 
 const getUsers = async (req, res) => {
   const { user } = req;
