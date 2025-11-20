@@ -1,6 +1,10 @@
 import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
+
+import logger from './config/logger.js';
+
+// Rutas
 import authRoutes from '#modules/auth/routes/auth.routes.js';
 import productRoutes from '#modules/product/routes/product.routes.js';
 import categoryRoutes from '#modules/category/routes/category.routes.js';
@@ -45,6 +49,7 @@ const corsOptions = {
   },
 };
 
+app.use(logger);
 app.use(cors(corsOptions));
 
 app.use('/auth', authRoutes);
