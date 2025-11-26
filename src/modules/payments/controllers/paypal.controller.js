@@ -32,7 +32,7 @@ const order = async (req, res) => {
     const { jsonResponse, httpStatusCode } = await createOrder(req.body);
     res.status(httpStatusCode).json(jsonResponse);
   } catch (error) {
-    console.error('Failed to create order:', error);
+    req.log.error(error);
     res.status(500).json({ error: 'Failed to create order.' });
   }
 };
