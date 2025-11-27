@@ -24,8 +24,14 @@ export const SaleCart = sequelize.define('sale_cart', {
   },
 });
 
-Product.hasMany(SaleCart);
-SaleCart.belongsTo(Product);
+Product.hasMany(SaleCart, {
+  foreignKey: 'product_id',
+  sourceKey: 'id',
+});
+SaleCart.belongsTo(Product, {
+  foreignKey: 'product_id',
+  targetId: 'id',
+});
 
 SaleOrder.hasMany(SaleCart);
 SaleCart.belongsTo(SaleOrder);
