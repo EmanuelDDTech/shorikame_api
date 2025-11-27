@@ -1,4 +1,5 @@
 import { MercadoPagoConfig, Payment, Preference } from 'mercadopago';
+import { processPaymentService } from '../services/mercadopago.service.js';
 
 const { MERCADO_PAGO_TOKEN } = process.env;
 
@@ -7,16 +8,23 @@ const preference = new Preference(client);
 const payment = new Payment(client);
 
 const createPreference = async (req, res) => {
-  const { items, back_urls, notification_url, auto_return = 'approved' } = req.body;
-
-  // console.log('Items', body.items);
+  const {
+    items,
+    back_urls,
+    notification_url,
+    auto_return = 'approved',
+    shipments,
+    metadata,
+  } = req.body;
 
   const preferenceData = {
     body: {
-      items: items,
-      back_urls: back_urls,
-      auto_return: auto_return,
-      notification_url: notification_url,
+      items,
+      back_urls,
+      auto_return,
+      notification_url,
+      shipments,
+      metadata,
     },
   };
 
@@ -29,10 +37,20 @@ const createPreference = async (req, res) => {
   }
 };
 
-const getPaymentInfoService = async (payment_id) => {
-  try {
-    const response = await payment.get({ id: payment_id });
+const getPaymentInfoService = async (req, res) => {
+  const { paymentId } = req.params;
 
+  try {
+    const response = await payment.get({ id: paymentId });
+    res.status(200).json({ ok: true, data: response });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+};
+
+const getPaymentInfo = async (paymentId) => {
+  try {
+    const response = await payment.get({ id: paymentId });
     return response;
   } catch (error) {
     throw error;
@@ -45,21 +63,20 @@ const webhook = async (req, res) => {
   try {
     switch (type) {
       case 'payment':
-        const response = await getPaymentInfoService(data.id);
-        console.log('Payment info:', response);
-        res.status(200).json(response);
+        await processPaymentService(data.id);
+        res.status(200).json();
         break;
       case 'plan':
-        // const plan = await mercadopago.plans.get(data.id);
+        res.status(200).json();
         break;
       case 'subscription':
-        // const subscription = await mercadopago.subscriptions.get(data.id);
+        res.status(200).json();
         break;
       case 'invoice':
-        // const invoice = await mercadopago.invoices.get(data.id);
+        res.status(200).json();
         break;
       case 'point_integration_wh':
-        // Contiene la informaciòn relacionada a la notificaciòn.
+        res.status(200).json();
         break;
     }
   } catch (error) {
@@ -67,4 +84,15 @@ const webhook = async (req, res) => {
   }
 };
 
-export { createPreference, webhook };
+const processPayment = async (req, res) => {
+  const { payment_id: transaction_id } = req.body;
+
+  try {
+    const saleOrder = await processPaymentService(transaction_id);
+    res.status(200).json({ order: saleOrder });
+  } catch (error) {
+    res.status(500).json({ ok: false, error: error.message });
+  }
+};
+
+export { createPreference, webhook, getPaymentInfoService, getPaymentInfo, processPayment };
