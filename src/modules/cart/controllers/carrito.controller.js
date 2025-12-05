@@ -31,17 +31,22 @@ const addProduct = async (req, res) => {
   const quantity = 1;
 
   try {
-    const product = await Cart.findOne({
+    let product = await Cart.findOne({
       where: {
         productId,
         userId,
       },
     });
 
-    if (product) return res.status(409).json({ msg: 'El producto ya está en el carrito' });
+    // if (product) return res.status(409).json({ msg: 'El producto ya está en el carrito' });
 
-    const newProduct = await Cart.create({ productId, userId, quantity });
-    return res.json(newProduct);
+    if (product) {
+      product.quantity = product.quantity + 1;
+      await product.save();
+    } else {
+      product = await Cart.create({ productId, userId, quantity });
+    }
+    return res.json(product);
   } catch (error) {
     return res.status(500).json({ msg: error.message });
   }
