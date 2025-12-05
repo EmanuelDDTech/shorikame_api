@@ -313,7 +313,7 @@ const createOrder = async (req, res) => {
   try {
     for (const sale_line of products) {
       const product = await Product.findOne({
-        where: { id: sale_line.productId },
+        where: { id: sale_line.product_id },
         attributes: ['id', 'name', 'sku', 'price', 'stock'],
       });
 
