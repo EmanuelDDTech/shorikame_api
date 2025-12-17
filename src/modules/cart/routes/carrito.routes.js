@@ -5,7 +5,7 @@ import {
   getCart,
   updateProduct,
 } from '#modules/cart/controllers/carrito.controller.js';
-import authMiddleware from '#src/middleware/authMiddleware.js';
+import authMiddleware from '#src/middleware/authMiddleware';
 
 const router = Router();
 

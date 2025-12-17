@@ -5,7 +5,7 @@ import {
   getFeaturedProductAll,
   updateFeaturedProduct,
 } from '#modules/product/controllers/featuredProduct.controller.js';
-import authMiddleware from '#src/middleware/authMiddleware.js';
+import authMiddleware from '#src/middleware/authMiddleware';
 
 const router = Router();
 

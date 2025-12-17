@@ -9,7 +9,7 @@ import {
   sendAdmin,
   googleLogin,
 } from '#modules/auth/controllers/auth.controllers';
-import authMiddleware from '#src/middleware/authMiddleware.js';
+import authMiddleware from '#src/middleware/authMiddleware';
 
 const router = Router();
 

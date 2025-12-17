@@ -6,7 +6,7 @@ import {
   getAddressOne,
   updateAddress,
 } from '#modules/address/controllers/address.controller.js';
-import authMiddleware from '#src/middleware/authMiddleware.js';
+import authMiddleware from '#src/middleware/authMiddleware';
 
 const router = Router();
 
