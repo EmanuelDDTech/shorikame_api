@@ -1,6 +1,6 @@
 import { User } from '#modules/user/models/User.js';
 import { hashPassword, checkPassword, generateJWT } from '#src/utils/index';
-import { sendEmailVerification } from '#src/emails/authEmailService.js';
+import { sendEmailVerification } from '#src/emails/authEmailService';
 import { OAuth2Client } from 'google-auth-library';
 import { Request, Response } from 'express';
 import { AuthRequest } from '../interfaces';
