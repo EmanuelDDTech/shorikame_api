@@ -1,6 +1,6 @@
 import { DataTypes } from 'sequelize';
 import { sequelize } from '#src/database/database.js';
-import { uniqueId } from '#src/utils/index.js';
+import { uniqueId } from '#src/utils/index';
 
 export const User = sequelize.define(
   'users',
