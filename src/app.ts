@@ -2,10 +2,10 @@ import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 
-import logger from './config/logger.js';
+import logger from './config/logger';
 
 // Rutas
-import authRoutes from '#modules/auth/routes/auth.routes.js';
+import authRoutes from '#modules/auth/routes/auth.routes';
 import productRoutes from '#modules/product/routes/product.routes.js';
 import categoryRoutes from '#modules/category/routes/category.routes.js';
 import filterGroupRoutes from '#modules/filter/routes/filterGroup.routes.js';
@@ -28,6 +28,7 @@ import deliveryRoutes from '#modules/delivery/routes/delivery.routes.js';
 import featuredProductRoutes from '#modules/product/routes/featuredProduct.routes.js';
 import discountCodeRoutes from '#modules/discount/routes/discountCode.routes.js';
 import usersRoutes from '#modules/user/routes/users.routes.js';
+import cardRoutes from '#modules/cards/routes/card.routes.js';
 
 const app = express();
 
@@ -76,5 +77,6 @@ app.use('/delivery', deliveryRoutes);
 app.use('/productos-destacados', featuredProductRoutes);
 app.use('/codigo-descuento', discountCodeRoutes);
 app.use('/users', usersRoutes);
+app.use('/cards', cardRoutes);
 
 export default app;

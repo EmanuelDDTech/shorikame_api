@@ -1,6 +1,5 @@
-import app from './app.js';
-import { sequelize } from './database/database.js';
-import { Cart } from './modules/cart/models/Cart.js';
+import app from './app';
+import { sequelize } from './database/database';
 
 async function main() {
   try {
