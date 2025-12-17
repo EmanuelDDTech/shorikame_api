@@ -2,12 +2,14 @@ import { User } from '#modules/user/models/User.js';
 import { hashPassword, checkPassword, generateJWT, uniqueId } from '#src/utils/index.js';
 import { sendEmailVerification } from '#src/emails/authEmailService.js';
 import { OAuth2Client } from 'google-auth-library';
+import { Request, Response } from 'express';
+import { AuthRequest } from '../interfaces';
 
 const client = new OAuth2Client(
   '409428805948-oabs342a3r6b7e21q6922d5buubkiph0.apps.googleusercontent.com',
 );
 
-const sendUser = async (req, res) => {
+const sendUser = async (req: AuthRequest, res: Response) => {
   const { user } = req;
   if (!user) {
     const error = new Error('Token no válido');
@@ -16,16 +18,16 @@ const sendUser = async (req, res) => {
   return res.json(user);
 };
 
-const sendAdmin = async (req, res) => {
+const sendAdmin = async (req: AuthRequest, res: Response) => {
   const { user } = req;
-  if (!user.isAdmin) {
+  if (!user?.isAdmin) {
     const error = new Error('Acción no válida');
     return res.status(403).json({ msg: error.message });
   }
   return res.json(user);
 };
 
-const register = async (req, res) => {
+const register = async (req: Request, res: Response) => {
   if (Object.values(req.body).includes('')) {
     const error = new Error('Todos los campos son obligatorios');
     return res.status(400).json({ msg: error.message });
@@ -48,7 +50,7 @@ const register = async (req, res) => {
     await sendEmailVerification({ name: newUser.name, email: newUser.email, token: newUser.token });
 
     return res.json({ msg: 'Revisa el correo que te enviamos para la verificación de la cuenta.' });
-  } catch (error) {
+  } catch (error: any) {
     if (error?.original.code === '23505') {
       return res.status(409).json({ msg: 'El correo ya existe' });
     }
@@ -57,7 +59,7 @@ const register = async (req, res) => {
   }
 };
 
-const verifyAccount = async (req, res) => {
+const verifyAccount = async (req: Request, res: Response) => {
   const { token } = req.params;
   const user = await User.findOne({ where: { token } });
 
@@ -76,7 +78,7 @@ const verifyAccount = async (req, res) => {
   }
 };
 
-const login = async (req, res) => {
+const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
   const user = await User.findOne({ where: { email } });
 
@@ -101,7 +103,7 @@ const login = async (req, res) => {
   return res.json({ token });
 };
 
-const googleLogin = async (req, res) => {
+const googleLogin = async (req: Request, res: Response) => {
   const { credential } = req.body;
 
   try {
@@ -111,7 +113,7 @@ const googleLogin = async (req, res) => {
     });
 
     const payload = ticket.getPayload();
-    const user = await User.findOne({ where: { email: payload.email } });
+    const user = await User.findOne({ where: { email: payload?.email } });
 
     if (user) {
       const token = generateJWT(user.id);
@@ -120,8 +122,8 @@ const googleLogin = async (req, res) => {
       const uniqueId = Date.now().toString(32) + Math.random().toString(32).substring(2);
       const password = await hashPassword(uniqueId);
       const newUser = await User.create({
-        name: payload.name,
-        email: payload.email,
+        name: payload?.name,
+        email: payload?.email,
         password,
         verified: true,
       });
@@ -129,12 +131,13 @@ const googleLogin = async (req, res) => {
       const token = generateJWT(newUser.id);
       return res.json({ token });
     }
-  } catch (error) {
-    return res.status(401).json({ msg: error.message });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return res.status(401).json({ msg });
   }
 };
 
-const deleteUser = async (req, res) => {
+const deleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
 
   try {
@@ -145,12 +148,13 @@ const deleteUser = async (req, res) => {
     });
 
     return res.sendStatus(204);
-  } catch (error) {
-    return res.status(500).json({ msg: error.message });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return res.status(500).json({ msg });
   }
 };
 
-const updateUser = async (req, res) => {
+const updateUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   const { name, verified, token } = req.body;
 
@@ -166,8 +170,9 @@ const updateUser = async (req, res) => {
     await user.save();
 
     return res.json(user);
-  } catch (error) {
-    return res.status(500).json({ msg: error.message });
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return res.status(500).json({ msg });
   }
 };
 

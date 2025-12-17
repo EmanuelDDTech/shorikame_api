@@ -8,7 +8,7 @@ import {
   login,
   sendAdmin,
   googleLogin,
-} from '#modules/auth/controllers/auth.controllers.js';
+} from '#modules/auth/controllers/auth.controllers';
 import authMiddleware from '#src/middleware/authMiddleware.js';
 
 const router = Router();

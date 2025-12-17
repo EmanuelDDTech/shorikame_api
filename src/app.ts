@@ -42,7 +42,10 @@ if (process.argv[2] === '--insomnia') {
 }
 
 const corsOptions = {
-  origin: function (origin, callback) {
+  origin: function (
+    origin: string | undefined,
+    callback: (err: Error | null, allow?: boolean) => void,
+  ) {
     if (whitelist.includes(origin)) {
       callback(null, true);
     } else {
