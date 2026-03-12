@@ -7,7 +7,7 @@ import {
   getCampaignById,
   updateCampaign,
 } from '#modules/campaign/controllers/campaign.controller.js';
-import authMiddleware from '#src/middleware/authMiddleware.js';
+import authMiddleware from '#src/middleware/authMiddleware';
 
 const router = Router();
 
