@@ -40,7 +40,13 @@ const getSetsBySeriesId = async (req, res) => {
       'pagination:itemsPerPage': itemsPerPage,
     });
 
-    setsData.sets = setsData.sets.reverse();
+    setsData.logo = `${setsData.logo}.webp`;
+
+    setsData.sets = setsData.sets.reverse().map((set) => ({
+      ...set,
+      logo: `${set.logo}.webp`,
+      symbol: `${set.symbol}.webp`,
+    }));
 
     res.json(setsData);
   } catch (error) {
