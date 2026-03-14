@@ -1,5 +1,5 @@
 import TCGdex from '@tcgdex/sdk';
-import { getSeriesAction } from '../actions/get-series.action.js';
+import { getSeriesAction, getSetsBySeriesIdAction } from '../actions';
 
 const tcgdex = new TCGdex('en');
 
@@ -16,8 +16,35 @@ const getSeries = async (req, res) => {
       logo: 'notnull:',
     });
 
-    res.json(series);
+    const formattedSeries = series.map((s) => ({
+      id: s.id,
+      name: s.name,
+      logo: `${s.logo}.webp`,
+    }));
+
+    res.json(formattedSeries);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getSetsBySeriesId = async (req, res) => {
+  const { seriesId } = req.params;
+  const { page = 1, itemsPerPage = 10 } = req.query;
+
+  try {
+    const setsData = await getSetsBySeriesIdAction(seriesId, {
+      'sort:field': 'releaseDate',
+      'sort:order': 'DESC',
+      'pagination:page': page,
+      'pagination:itemsPerPage': itemsPerPage,
+    });
+
+    setsData.sets = setsData.sets.reverse();
+
+    res.json(setsData);
+  } catch (error) {
+    console.log('Error fetching sets by series ID:', error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -32,4 +59,4 @@ const getSets = async (req, res) => {
   }
 };
 
-export { getSeries, getSets };
+export { getSeries, getSetsBySeriesId, getSets };
