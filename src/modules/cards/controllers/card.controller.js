@@ -1,5 +1,6 @@
 import TCGdex from '@tcgdex/sdk';
-import { getSeriesAction } from '../actions/get-series.action.js';
+import { getSeriesAction, getSetByIdAction, getSetsBySeriesIdAction } from '../actions';
+import { getCardByIdAction } from '../actions/get-card-by-id.action';
 
 const tcgdex = new TCGdex('en');
 
@@ -16,8 +17,41 @@ const getSeries = async (req, res) => {
       logo: 'notnull:',
     });
 
-    res.json(series);
+    const formattedSeries = series.map((s) => ({
+      id: s.id,
+      name: s.name,
+      logo: `${s.logo}.webp`,
+    }));
+
+    res.json(formattedSeries);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getSetsBySeriesId = async (req, res) => {
+  const { seriesId } = req.params;
+  const { page = 1, itemsPerPage = 10 } = req.query;
+
+  try {
+    const setsData = await getSetsBySeriesIdAction(seriesId, {
+      'sort:field': 'releaseDate',
+      'sort:order': 'DESC',
+      'pagination:page': page,
+      'pagination:itemsPerPage': itemsPerPage,
+    });
+
+    setsData.logo = `${setsData.logo}.webp`;
+
+    setsData.sets = setsData.sets.reverse().map((set) => ({
+      ...set,
+      logo: `${set.logo}.webp`,
+      symbol: `${set.symbol}.webp`,
+    }));
+
+    res.json(setsData);
+  } catch (error) {
+    console.log('Error fetching sets by series ID:', error);
     res.status(500).json({ error: error.message });
   }
 };
@@ -32,4 +66,36 @@ const getSets = async (req, res) => {
   }
 };
 
-export { getSeries, getSets };
+const getSetById = async (req, res) => {
+  const { setId } = req.params;
+
+  try {
+    const setData = await getSetByIdAction(setId);
+
+    setData.logo = `${setData.logo}.webp`;
+    setData.cards = setData.cards.map((card) => ({
+      ...card,
+      image: `${card.image}/low.webp`,
+    }));
+
+    res.json(setData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getCardById = async (req, res) => {
+  const { cardId } = req.params;
+
+  try {
+    const cardData = await getCardByIdAction(cardId);
+
+    cardData.image = `${cardData.image}/high.webp`;
+
+    res.json(cardData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export { getSeries, getSetsBySeriesId, getSetById, getSets, getCardById };
