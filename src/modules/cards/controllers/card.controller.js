@@ -1,5 +1,6 @@
 import TCGdex from '@tcgdex/sdk';
-import { getSeriesAction, getSetsBySeriesIdAction } from '../actions';
+import { getSeriesAction, getSetByIdAction, getSetsBySeriesIdAction } from '../actions';
+import { getCardByIdAction } from '../actions/get-card-by-id.action';
 
 const tcgdex = new TCGdex('en');
 
@@ -65,4 +66,36 @@ const getSets = async (req, res) => {
   }
 };
 
-export { getSeries, getSetsBySeriesId, getSets };
+const getSetById = async (req, res) => {
+  const { setId } = req.params;
+
+  try {
+    const setData = await getSetByIdAction(setId);
+
+    setData.logo = `${setData.logo}.webp`;
+    setData.cards = setData.cards.map((card) => ({
+      ...card,
+      image: `${card.image}/low.webp`,
+    }));
+
+    res.json(setData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+const getCardById = async (req, res) => {
+  const { cardId } = req.params;
+
+  try {
+    const cardData = await getCardByIdAction(cardId);
+
+    cardData.image = `${cardData.image}/high.webp`;
+
+    res.json(cardData);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export { getSeries, getSetsBySeriesId, getSetById, getSets, getCardById };
