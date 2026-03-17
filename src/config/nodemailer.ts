@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-export function createTransport(host, port, user, pass) {
+export function createTransport(host: string, port: number, user: string, pass: string) {
   return nodemailer.createTransport({
     host,
     port,

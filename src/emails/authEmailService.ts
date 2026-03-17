@@ -1,9 +1,15 @@
 import { createTransport } from '../config/nodemailer.js';
 import { Resend } from 'resend';
 
+interface EmailVerificationPayload {
+  name: string;
+  email: string;
+  token: string;
+}
+
 const resend = new Resend(process.env.EMAIL_RESEND);
 
-export async function sendEmailVerification({ name, email, token }) {
+export async function sendEmailVerification({ name, email, token }: EmailVerificationPayload) {
   // const transporter = createTransport(
   //   process.env.EMAIL_HOST,
   //   process.env.EMAIL_PORT,
@@ -41,7 +47,7 @@ export async function sendEmailVerification({ name, email, token }) {
   // console.log('Mensaje enviado', info.messageId);
 }
 
-function renderHTML(name, token) {
+function renderHTML(name: string, token: string): string {
   const htmlEmail = `<head>
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0">

@@ -1,9 +1,23 @@
-import { DataTypes } from 'sequelize';
+import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '#src/database/database.js';
 import { uniqueId } from '#src/utils/index';
 
-export const User = sequelize.define(
-  'users',
+interface UserAttributes {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  verified: boolean;
+  isAdmin: boolean;
+  token: string;
+}
+
+interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'verified' | 'isAdmin' | 'token'> {}
+
+export interface UserInstance extends Model<UserAttributes, UserCreationAttributes>, UserAttributes {}
+
+export const User = sequelize.define<UserInstance,
+  UserAttributes>('users',
   {
     id: {
       type: DataTypes.INTEGER,

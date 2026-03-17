@@ -1,4 +1,4 @@
-import { User } from '#modules/user/models/User.js';
+import { User, UserInstance } from '#modules/user/models/User.js';
 import { hashPassword, checkPassword, generateJWT } from '#src/utils/index';
 import { sendEmailVerification } from '#src/emails/authEmailService';
 import { OAuth2Client } from 'google-auth-library';
@@ -45,7 +45,7 @@ const register = async (req: Request, res: Response) => {
     }
 
     const hashPass = await hashPassword(password);
-    const newUser = await User.create({ name, email, password: hashPass });
+    const newUser = await User.create({ name, email, password: hashPass }) as UserInstance;
 
     await sendEmailVerification({ name: newUser.name, email: newUser.email, token: newUser.token });
 
@@ -61,7 +61,7 @@ const register = async (req: Request, res: Response) => {
 
 const verifyAccount = async (req: Request, res: Response) => {
   const { token } = req.params;
-  const user = await User.findOne({ where: { token } });
+  const user = (await User.findOne({ where: { token } })) as UserInstance | null;
 
   if (!user) {
     const error = new Error('Hubo un error, token no válido');
@@ -80,7 +80,7 @@ const verifyAccount = async (req: Request, res: Response) => {
 
 const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
-  const user = await User.findOne({ where: { email } });
+  const user = (await User.findOne({ where: { email } })) as UserInstance | null;
 
   if (!user) {
     const error = new Error('El usuario no existe');
@@ -113,7 +113,7 @@ const googleLogin = async (req: Request, res: Response) => {
     });
 
     const payload = ticket.getPayload();
-    const user = await User.findOne({ where: { email: payload?.email } });
+    const user = (await User.findOne({ where: { email: payload?.email } })) as UserInstance | null;
 
     if (user) {
       const token = generateJWT(user.id);
@@ -121,12 +121,15 @@ const googleLogin = async (req: Request, res: Response) => {
     } else {
       const uniqueId = Date.now().toString(32) + Math.random().toString(32).substring(2);
       const password = await hashPassword(uniqueId);
-      const newUser = await User.create({
-        name: payload?.name,
-        email: payload?.email,
+      if (!payload?.name || !payload?.email) {
+        return res.status(400).json({ msg: 'No se pudo obtener nombre/email de Google' });
+      }
+      const newUser = (await User.create({
+        name: payload.name,
+        email: payload.email,
         password,
         verified: true,
-      });
+      })) as UserInstance;
 
       const token = generateJWT(newUser.id);
       return res.json({ token });
@@ -159,7 +162,7 @@ const updateUser = async (req: Request, res: Response) => {
   const { name, verified, token } = req.body;
 
   try {
-    const user = await User.findByPk(id);
+    const user = (await User.findByPk(Number(id))) as UserInstance | null;
 
     if (!user) return res.status(404).json({ msg: 'Usuario no encontrado' });
 
