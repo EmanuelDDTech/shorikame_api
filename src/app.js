@@ -2,10 +2,10 @@ import express from 'express';
 import morgan from 'morgan';
 import cors from 'cors';
 
-import logger from './config/logger';
+import logger from './config/logger.js';
 
 // Rutas
-import authRoutes from '#modules/auth/routes/auth.routes';
+import authRoutes from '#modules/auth/routes/auth.routes.js';
 import productRoutes from '#modules/product/routes/product.routes.js';
 import categoryRoutes from '#modules/category/routes/category.routes.js';
 import filterGroupRoutes from '#modules/filter/routes/filterGroup.routes.js';
@@ -42,10 +42,7 @@ if (process.argv[2] === '--insomnia') {
 }
 
 const corsOptions = {
-  origin: function (
-    origin: string | undefined,
-    callback: (err: Error | null, allow?: boolean) => void,
-  ) {
+  origin: function (origin, callback) {
     if (whitelist.includes(origin)) {
       callback(null, true);
     } else {

@@ -1,8 +1,7 @@
 import jwt from 'jsonwebtoken';
-import { Request, Response, NextFunction } from 'express';
 import { User } from '#modules/user/models/User.js';
 
-const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+const authMiddleware = async (req, res, next) => {
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
       const token = req.headers.authorization.split(' ')[1];
@@ -12,8 +11,8 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
         throw new Error('Token o JWT_SECRET no definidos');
       }
 
-      const decoded = jwt.verify(token, jwtSecret) as { id: number };
-      (req as any).user = await User.findByPk(decoded.id, {
+      const decoded = jwt.verify(token, jwtSecret);
+      req.user = await User.findByPk(decoded.id, {
         attributes: ['id', 'name', 'email', 'isAdmin'],
       });
 

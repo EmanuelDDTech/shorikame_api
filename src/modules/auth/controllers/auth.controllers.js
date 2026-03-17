@@ -1,15 +1,13 @@
 import { User, UserInstance } from '#modules/user/models/User.js';
-import { hashPassword, checkPassword, generateJWT } from '#src/utils/index';
-import { sendEmailVerification } from '#src/emails/authEmailService';
+import { hashPassword, checkPassword, generateJWT } from '#src/utils/index.js';
+import { sendEmailVerification } from '#src/emails/authEmailService.js';
 import { OAuth2Client } from 'google-auth-library';
-import { Request, Response } from 'express';
-import { AuthRequest } from '../interfaces';
 
 const client = new OAuth2Client(
   '409428805948-oabs342a3r6b7e21q6922d5buubkiph0.apps.googleusercontent.com',
 );
 
-const sendUser = async (req: AuthRequest, res: Response) => {
+const sendUser = async (req, res) => {
   const { user } = req;
   if (!user) {
     const error = new Error('Token no válido');
@@ -18,7 +16,7 @@ const sendUser = async (req: AuthRequest, res: Response) => {
   return res.json(user);
 };
 
-const sendAdmin = async (req: AuthRequest, res: Response) => {
+const sendAdmin = async (req, res) => {
   const { user } = req;
   if (!user?.isAdmin) {
     const error = new Error('Acción no válida');
@@ -27,7 +25,7 @@ const sendAdmin = async (req: AuthRequest, res: Response) => {
   return res.json(user);
 };
 
-const register = async (req: Request, res: Response) => {
+const register = async (req, res) => {
   if (Object.values(req.body).includes('')) {
     const error = new Error('Todos los campos son obligatorios');
     return res.status(400).json({ msg: error.message });
@@ -45,13 +43,13 @@ const register = async (req: Request, res: Response) => {
     }
 
     const hashPass = await hashPassword(password);
-    const newUser = await User.create({ name, email, password: hashPass }) as UserInstance;
+    const newUser = await User.create({ name, email, password: hashPass });
 
     await sendEmailVerification({ name: newUser.name, email: newUser.email, token: newUser.token });
 
     return res.json({ msg: 'Revisa el correo que te enviamos para la verificación de la cuenta.' });
-  } catch (error: any) {
-    if (error?.original.code === '23505') {
+  } catch (error) {
+    if (error?.original?.code === '23505') {
       return res.status(409).json({ msg: 'El correo ya existe' });
     }
 
@@ -59,9 +57,9 @@ const register = async (req: Request, res: Response) => {
   }
 };
 
-const verifyAccount = async (req: Request, res: Response) => {
+const verifyAccount = async (req, res) => {
   const { token } = req.params;
-  const user = (await User.findOne({ where: { token } })) as UserInstance | null;
+  const user = (await User.findOne({ where: { token } }));
 
   if (!user) {
     const error = new Error('Hubo un error, token no válido');
@@ -78,9 +76,9 @@ const verifyAccount = async (req: Request, res: Response) => {
   }
 };
 
-const login = async (req: Request, res: Response) => {
+const login = async (req, res) => {
   const { email, password } = req.body;
-  const user = (await User.findOne({ where: { email } })) as UserInstance | null;
+  const user = (await User.findOne({ where: { email } }));
 
   if (!user) {
     const error = new Error('El usuario no existe');
@@ -103,7 +101,7 @@ const login = async (req: Request, res: Response) => {
   return res.json({ token });
 };
 
-const googleLogin = async (req: Request, res: Response) => {
+const googleLogin = async (req, res) => {
   const { credential } = req.body;
 
   try {
@@ -113,7 +111,7 @@ const googleLogin = async (req: Request, res: Response) => {
     });
 
     const payload = ticket.getPayload();
-    const user = (await User.findOne({ where: { email: payload?.email } })) as UserInstance | null;
+    const user = (await User.findOne({ where: { email: payload?.email } }));
 
     if (user) {
       const token = generateJWT(user.id);
@@ -129,18 +127,17 @@ const googleLogin = async (req: Request, res: Response) => {
         email: payload.email,
         password,
         verified: true,
-      })) as UserInstance;
+      }));
 
       const token = generateJWT(newUser.id);
       return res.json({ token });
     }
-  } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : String(error);
-    return res.status(401).json({ msg });
+  } catch (error) {
+    return res.status(401).json({ msg: error.message });
   }
 };
 
-const deleteUser = async (req: Request, res: Response) => {
+const deleteUser = async (req, res) => {
   const { id } = req.params;
 
   try {
@@ -151,18 +148,18 @@ const deleteUser = async (req: Request, res: Response) => {
     });
 
     return res.sendStatus(204);
-  } catch (error: unknown) {
+  } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return res.status(500).json({ msg });
   }
 };
 
-const updateUser = async (req: Request, res: Response) => {
+const updateUser = async (req, res) => {
   const { id } = req.params;
   const { name, verified, token } = req.body;
 
   try {
-    const user = (await User.findByPk(Number(id))) as UserInstance | null;
+    const user = (await User.findByPk(Number(id)));
 
     if (!user) return res.status(404).json({ msg: 'Usuario no encontrado' });
 
@@ -173,7 +170,7 @@ const updateUser = async (req: Request, res: Response) => {
     await user.save();
 
     return res.json(user);
-  } catch (error: unknown) {
+  } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return res.status(500).json({ msg });
   }

@@ -1,5 +1,5 @@
 import app from './app';
-import { sequelize } from './database/database';
+import { sequelize } from './database/database.js';
 
 async function main() {
   try {
