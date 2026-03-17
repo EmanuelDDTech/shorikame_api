@@ -1,4 +1,4 @@
-import { User, UserInstance } from '#modules/user/models/User.js';
+import { User } from '#modules/user/models/User.js';
 import { hashPassword, checkPassword, generateJWT } from '#src/utils/index.js';
 import { sendEmailVerification } from '#src/emails/authEmailService.js';
 import { OAuth2Client } from 'google-auth-library';

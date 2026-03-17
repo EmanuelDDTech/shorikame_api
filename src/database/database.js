@@ -1,9 +1,12 @@
 import { Sequelize } from 'sequelize';
 import pg from 'pg';
-import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-const filePath = path.join(__dirname, '../certificados', 'us-east-2-bundle.pem');
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const filePath = join(__dirname, '/../certificados', 'us-east-2-bundle.pem');
 
 const database = process.env.DB_DATABASE || '';
 const databaseUser = process.env.DB_USER || '';
