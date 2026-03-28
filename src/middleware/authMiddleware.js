@@ -5,7 +5,13 @@ const authMiddleware = async (req, res, next) => {
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
     try {
       const token = req.headers.authorization.split(' ')[1];
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const jwtSecret = process.env.JWT_SECRET;
+
+      if (!token || !jwtSecret) {
+        throw new Error('Token o JWT_SECRET no definidos');
+      }
+
+      const decoded = jwt.verify(token, jwtSecret);
       req.user = await User.findByPk(decoded.id, {
         attributes: ['id', 'name', 'email', 'isAdmin'],
       });

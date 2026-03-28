@@ -21,7 +21,12 @@ const checkPassword = async (inputPassword, userPassword) => {
 };
 
 const generateJWT = (id) => {
-  const token = jwt.sign({ id }, process.env.JWT_SECRET, {
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    throw new Error('JWT_SECRET no definido');
+  }
+
+  const token = jwt.sign({ id }, jwtSecret, {
     expiresIn: '30d',
   });
 

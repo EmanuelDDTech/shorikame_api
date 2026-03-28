@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import authMiddleware from '#src/middleware/authMiddleware';
+import authMiddleware from '#src/middleware/authMiddleware.js';
 import {
   createDiscountCode,
   deleteDiscountCode,

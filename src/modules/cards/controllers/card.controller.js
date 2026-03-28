@@ -1,6 +1,5 @@
 import TCGdex from '@tcgdex/sdk';
-import { getSeriesAction, getSetByIdAction, getSetsBySeriesIdAction } from '../actions';
-import { getCardByIdAction } from '../actions/get-card-by-id.action';
+import { getSeriesAction, getSetByIdAction, getSetsBySeriesIdAction, getCardByIdAction } from '../actions/index.js';
 
 const tcgdex = new TCGdex('en');
 
