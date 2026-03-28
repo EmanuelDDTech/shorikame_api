@@ -14,21 +14,23 @@ export const sequelize = new Sequelize(
   process.env.DB_PASS!,
   {
     host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT) || 6543,
     dialect: 'postgres',
     dialectOptions: {
       ssl: {
-        // rejectUnauthorized: true,
-        // ca: fs.readFileSync(filePath).toString(),
         require: true,
         rejectUnauthorized: false,
       },
+      // Transaction mode (PgBouncer) no soporta prepared statements
+      statement_timeout: 10000,
     },
     dialectModule: pg,
+    logging: false,
     pool: {
-      max: 10, // Máximo número de conexiones
-      min: 0, // Mínimo número de conexiones
-      acquire: 30000, // Tiempo máximo para obtener una conexión (ms)
-      idle: 10000, // Tiempo que una conexión inactiva espera antes de cerrarse (ms)
+      max: 1, // Una conexión por instancia serverless
+      min: 0,
+      acquire: 10000,
+      idle: 1000,
     },
   },
 );
