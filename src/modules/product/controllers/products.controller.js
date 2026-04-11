@@ -5,6 +5,7 @@ const getProducts = async (req, res) => {
 
   const {
     existence,
+    category,
     minPrice,
     maxPrice,
     page = 1,
@@ -29,6 +30,7 @@ const getProducts = async (req, res) => {
                 A."createdAt" AS created_at
                 FROM public.products AS A
 	              INNER JOIN public.product_galleries AS B ON B.product_id = A.id
+                INNER JOIN public.product_categories AS D ON D.id = A.product_category_id
                 LEFT JOIN public.campaign_products AS C ON C.product_id = A.id
                 WHERE B.order = 1 
               `;
@@ -60,6 +62,10 @@ const getProducts = async (req, res) => {
 
   if (existence) {
     query += ` AND A.stock > 0 `;
+  }
+
+  if (category) {
+    query += ` AND D.id = '${category}' `;
   }
 
   if (minPrice && maxPrice) {
