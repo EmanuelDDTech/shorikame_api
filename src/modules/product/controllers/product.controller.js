@@ -131,7 +131,7 @@ const searchProducts = async (req, res) => {
   try {
     const query = String(req.query.q ?? '').trim();
     const isAdmin = req.query.admin === 'true';
-    const similarityThreshold = 0.2;
+    const similarityThreshold = 0.4;
 
     if (!query)
       return res.status(400).json({ error: 'Debes proporcionar un término de búsqueda.' });
