@@ -129,18 +129,34 @@ const deleteProduct = async (req, res) => {
 
 const searchProducts = async (req, res) => {
   try {
-    const query = req.query.q;
-    const admin = req.query.admin;
+    const query = String(req.query.q ?? '').trim();
+    const isAdmin = req.query.admin === 'true';
+    const similarityThreshold = 0.2;
 
     if (!query)
       return res.status(400).json({ error: 'Debes proporcionar un término de búsqueda.' });
 
+    const filters = [
+      {
+        [Op.or]: [
+          sequelize.where(sequelize.fn('similarity', sequelize.col('name'), query), {
+            [Op.gt]: similarityThreshold,
+          }),
+          sequelize.where(sequelize.fn('similarity', sequelize.col('sku'), query), {
+            [Op.gt]: similarityThreshold,
+          }),
+        ],
+      },
+    ];
+
+    if (!isAdmin) {
+      filters.push({ active: true });
+    }
+
     const products = await Product.findAll({
-      where: sequelize.literal(
-        `(similarity(name, '${query}') > 0.2 OR similarity(sku, '${query}') > 0.2) ${
-          admin ? '' : 'AND active = true'
-        }`,
-      ),
+      where: {
+        [Op.and]: filters,
+      },
       attributes: {
         exclude: ['createdAt', 'updatedAt'],
       },
