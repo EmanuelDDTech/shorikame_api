@@ -35,7 +35,7 @@ const getProducts = async (req, res) => {
                 WHERE B.order = 1 
               `;
 
-  if (!user?.isAdmin) {
+  if (!user?.isAdmin || active) {
     query += `
       AND A.active = true
     `;
