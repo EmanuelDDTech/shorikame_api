@@ -1,72 +1,78 @@
-import { Op } from 'sequelize';
-import { DeliveryCarrier } from '#modules/delivery/models/DeliveryCarrier.js';
-import { DeliveryPriceRule } from '#modules/delivery/models/DeliveryPriceRule.js';
-import { Product } from '#modules/product/models/Product.js';
+import {
+  getAvailableShippingOptions,
+  getShippingZoneByZipCode,
+} from '#modules/delivery/services/shipping.service.js';
 
 const findAvailable = async (req, res) => {
-  const { weight, zipCode } = req.query;
-  const serviceLevels = ['delivery'];
-  let freeDelivery = {};
-
   try {
-    const deliveries = await DeliveryCarrier.findAll({
-      where: {
-        free_over: false,
-        servicelevel: serviceLevels,
-      },
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
-      include: [
-        {
-          model: DeliveryPriceRule,
-          required: true,
-          order: [['max_value', 'ASC']],
-          where: {
-            max_value: {
-              [Op.gte]: weight,
-            },
-          },
-          attributes: { exclude: ['createdAt', 'updatedAt'] },
-        },
-      ],
-    });
-
-    if (weight <= 0) {
-      freeDelivery = await findFreeDelivery();
-      deliveries.push(freeDelivery);
-    }
-
-    const localDelivery = await findLocalDelivery();
-    if (localDelivery) deliveries.push(localDelivery);
-
-    return res.json(deliveries);
+    const quote = await buildShippingQuote(req.query);
+    return res.json(quote.options);
   } catch (error) {
-    return res.status(500).json({ msg: error.message });
+    return res.status(error.statusCode || 500).json({ msg: error.message });
   }
 };
 
-const findFreeDelivery = async () => {
+const quoteShipping = async (req, res) => {
   try {
-    return await DeliveryCarrier.findOne({
-      where: {
-        free_over: true,
-      },
-    });
+    const quote = await buildShippingQuote(req.method === 'GET' ? req.query : req.body);
+    return res.json(quote);
   } catch (error) {
-    return res.status(500).json({ msg: error.message });
+    return res.status(error.statusCode || 500).json({ msg: error.message });
   }
 };
 
-const findLocalDelivery = async () => {
+const findZoneByZipCode = async (req, res) => {
+  const { zipCode } = req.params;
+
   try {
-    return await DeliveryCarrier.findOne({
-      where: {
-        free_over: true,
-        servicelevel: 'local',
-      },
-    });
+    const zone = await getShippingZoneByZipCode(zipCode);
+    return res.json(zone);
   } catch (error) {
-    return res.status(500).json({ msg: error.message });
+    return res.status(error.statusCode || 500).json({ msg: error.message });
   }
 };
 
-export { findAvailable };
+const buildShippingQuote = async (data) => {
+  const weight = parseRequiredNumber(data.weight ?? data.totalWeight, 'weight');
+  const orderTotal = parseOptionalNumber(
+    data.orderTotal ?? data.order_total ?? data.subtotal ?? data.amountSubtotal,
+    'orderTotal',
+  );
+  const zipCode = data.zipCode ?? data.zip ?? data.postalCode;
+
+  return getAvailableShippingOptions({ weight, zipCode, orderTotal });
+};
+
+const parseRequiredNumber = (value, fieldName) => {
+  if (value === undefined || value === null || value === '') {
+    throw createControllerError(`El parámetro ${fieldName} es obligatorio`);
+  }
+
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw createControllerError(`El parámetro ${fieldName} debe ser un número mayor o igual a 0`);
+  }
+
+  return parsed;
+};
+
+const parseOptionalNumber = (value, fieldName) => {
+  if (value === undefined || value === null || value === '') return 0;
+
+  const parsed = Number(value);
+
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw createControllerError(`El parámetro ${fieldName} debe ser un número mayor o igual a 0`);
+  }
+
+  return parsed;
+};
+
+const createControllerError = (message) => {
+  const error = new Error(message);
+  error.statusCode = 400;
+  return error;
+};
+
+export { findAvailable, findZoneByZipCode, quoteShipping };

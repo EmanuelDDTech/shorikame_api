@@ -30,6 +30,16 @@ import discountCodeRoutes from '#modules/discount/routes/discountCode.routes.js'
 import usersRoutes from '#modules/user/routes/users.routes.js';
 import cardRoutes from '#modules/cards/routes/card.routes.js';
 
+import { ShippingZone } from './modules/delivery/models/ShippingZone.js';
+import { ShippingPricingType } from './modules/delivery/models/ShippingPricingType.js';
+import { ShippingCode } from './modules/delivery/models/ShippingCode.js';
+import { ShippingCarrier } from './modules/delivery/models/ShippingCarrier.js';
+import { ShippingCoverageRule } from './modules/delivery/models/ShippingCoverageRule.js';
+import { ShippingDisplayRule } from './modules/delivery/models/ShippingDisplayRule.js';
+import { ShippingFreeRule } from './modules/delivery/models/ShippingFreeRule.js';
+import { ShippingInsurance } from './modules/delivery/models/ShippingInsurance.js';
+import { ShippingRate } from './modules/delivery/models/ShippingRate.js';
+
 const app = express();
 
 app.use(morgan('dev'));
