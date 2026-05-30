@@ -1,5 +1,6 @@
 import {
   getAvailableShippingOptions,
+  getAvailableShippingOptionsFromUserCart,
   getShippingZoneByZipCode,
 } from '#modules/delivery/services/shipping.service.js';
 
@@ -21,6 +22,24 @@ const quoteShipping = async (req, res) => {
   }
 };
 
+const quoteCurrentCartShipping = async (req, res) => {
+  const { id: userId } = req.user;
+
+  try {
+    const data = req.method === 'GET' ? req.query : req.body;
+    const orderTotal = parseOptionalNumber(
+      data.orderTotal ?? data.order_total ?? data.subtotal ?? data.amountSubtotal,
+      'orderTotal',
+    );
+    const zipCode = data.zipCode ?? data.zip ?? data.postalCode;
+    const quote = await getAvailableShippingOptionsFromUserCart({ userId, zipCode, orderTotal });
+
+    return res.json(quote);
+  } catch (error) {
+    return res.status(error.statusCode || 500).json({ msg: error.message });
+  }
+};
+
 const findZoneByZipCode = async (req, res) => {
   const { zipCode } = req.params;
 
@@ -32,15 +51,19 @@ const findZoneByZipCode = async (req, res) => {
   }
 };
 
-const buildShippingQuote = async (data) => {
-  const weight = parseRequiredNumber(data.weight ?? data.totalWeight, 'weight');
+const buildShippingQuote = async (data = {}) => {
+  const products = data.products ?? data.cart ?? data.cartProducts;
+  const weight =
+    products === undefined
+      ? parseRequiredNumber(data.weight ?? data.totalWeight, 'weight')
+      : parseOptionalNumber(data.weight ?? data.totalWeight, 'weight');
   const orderTotal = parseOptionalNumber(
     data.orderTotal ?? data.order_total ?? data.subtotal ?? data.amountSubtotal,
     'orderTotal',
   );
   const zipCode = data.zipCode ?? data.zip ?? data.postalCode;
 
-  return getAvailableShippingOptions({ weight, zipCode, orderTotal });
+  return getAvailableShippingOptions({ weight, products, zipCode, orderTotal });
 };
 
 const parseRequiredNumber = (value, fieldName) => {
@@ -75,4 +98,4 @@ const createControllerError = (message) => {
   return error;
 };
 
-export { findAvailable, findZoneByZipCode, quoteShipping };
+export { findAvailable, findZoneByZipCode, quoteCurrentCartShipping, quoteShipping };

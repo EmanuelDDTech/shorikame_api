@@ -1,12 +1,24 @@
 import { Op } from 'sequelize';
 
+import { Cart } from '#modules/cart/models/Cart.js';
+import { Product } from '#modules/product/models/Product.js';
 import { SaleOrder } from '#modules/sale/models/SaleOrder.js';
 import { ShippingCarrier } from '#modules/delivery/models/ShippingCarrier.js';
 import { ShippingCode } from '#modules/delivery/models/ShippingCode.js';
 import { ShippingDisplayRule } from '#modules/delivery/models/ShippingDisplayRule.js';
 import { ShippingFreeRule } from '#modules/delivery/models/ShippingFreeRule.js';
+import { ShippingPricingType } from '#modules/delivery/models/ShippingPricingType.js';
 import { ShippingRate } from '#modules/delivery/models/ShippingRate.js';
 import { ShippingZone } from '#modules/delivery/models/ShippingZone.js';
+
+const SHIPPING_PRICING_TYPES = {
+  FIXED_PLUS_EXTRA: 'FIXED_PLUS_EXTRA',
+  WEIGHT_RANGE: 'WEIGHT_RANGE',
+  PER_KG: 'PER_KG',
+};
+
+const VOLUMETRIC_WEIGHT_DIVISOR = 5000;
+const PRODUCT_SHIPPING_ATTRIBUTES = ['id', 'weight', 'length', 'width', 'height'];
 
 const createShippingError = (message, statusCode = 400) => {
   const error = new Error(message);
@@ -66,77 +78,258 @@ const getShippingZoneByZipCode = async (zipCode) => {
   };
 };
 
-const findRateForCarrier = async ({ carrierId, zoneId, weight }) => {
-  const weightFilter = {
-    [Op.and]: [
-      {
-        [Op.or]: [{ min_weight: null }, { min_weight: { [Op.lte]: weight } }],
-      },
-      {
-        [Op.or]: [{ max_weight: null }, { max_weight: { [Op.gte]: weight } }],
-      },
-    ],
-  };
+const getProductFromLine = (line) => {
+  return line.product ?? line.Product ?? line.products ?? line;
+};
 
-  const rate = await ShippingRate.findOne({
-    where: {
+const getProductIdFromLine = (line) => {
+  return line.product_id ?? line.productId ?? line.product?.id ?? line.Product?.id ?? line.id;
+};
+
+const getQuantityFromLine = (line) => {
+  const quantity = toNumber(line.quantity, 1);
+  return quantity > 0 ? quantity : 1;
+};
+
+const hydrateProductLine = async (line) => {
+  const product = getProductFromLine(line);
+
+  if (
+    product &&
+    (product.weight !== undefined ||
+      product.length !== undefined ||
+      product.width !== undefined ||
+      product.height !== undefined)
+  ) {
+    return {
+      quantity: getQuantityFromLine(line),
+      product,
+    };
+  }
+
+  const productId = getProductIdFromLine(line);
+
+  if (!productId) {
+    throw createShippingError('Cada producto del carrito debe incluir id o datos de medidas');
+  }
+
+  const productModel = await Product.findByPk(productId, {
+    attributes: PRODUCT_SHIPPING_ATTRIBUTES,
+  });
+
+  if (!productModel) {
+    throw createShippingError(`Producto ${productId} no encontrado`, 404);
+  }
+
+  return {
+    quantity: getQuantityFromLine(line),
+    product: productModel.get({ plain: true }),
+  };
+};
+
+const calculateCartShippingWeight = async (products) => {
+  if (!Array.isArray(products) || products.length === 0) {
+    throw createShippingError('El carrito debe incluir al menos un producto');
+  }
+
+  const hydratedLines = await Promise.all(products.map((line) => hydrateProductLine(line)));
+
+  const summary = hydratedLines.reduce(
+    (totals, line) => {
+      const { product, quantity } = line;
+      const physicalWeight = toNumber(product.weight) * quantity;
+      const volumetricWeight =
+        (toNumber(product.length) * toNumber(product.width) * toNumber(product.height) * quantity) /
+        VOLUMETRIC_WEIGHT_DIVISOR;
+
+      totals.physical_weight += physicalWeight;
+      totals.volumetric_weight += volumetricWeight;
+
+      return totals;
+    },
+    {
+      physical_weight: 0,
+      volumetric_weight: 0,
+    },
+  );
+
+  const physicalWeight = roundWeight(summary.physical_weight);
+  const volumetricWeight = roundWeight(summary.volumetric_weight);
+  const chargeableWeight = Math.max(physicalWeight, volumetricWeight);
+
+  return {
+    physical_weight: physicalWeight,
+    volumetric_weight: volumetricWeight,
+    chargeable_weight: chargeableWeight,
+    weight_source: volumetricWeight > physicalWeight ? 'VOLUMETRIC' : 'PHYSICAL',
+  };
+};
+
+const getCartShippingWeightByUserId = async (userId) => {
+  const cartProducts = await Cart.findAll({
+    where: { userId },
+    attributes: ['id', 'quantity'],
+    include: {
+      model: Product,
+      attributes: PRODUCT_SHIPPING_ATTRIBUTES,
+    },
+  });
+
+  if (!cartProducts.length) {
+    throw createShippingError('El carrito no tiene productos');
+  }
+
+  return calculateCartShippingWeight(
+    cartProducts.map((cartProduct) => cartProduct.get({ plain: true })),
+  );
+};
+
+const roundWeight = (value) =>
+  Number((Math.round((value + Number.EPSILON) * 1000) / 1000).toFixed(3));
+
+const buildRateWhere = ({ carrierId, zoneId, pricingTypeId, filters = [] }) => {
+  const conditions = [
+    {
       carrier_id: carrierId,
       zone_id: zoneId,
-      ...weightFilter,
     },
+  ];
+
+  if (pricingTypeId !== undefined) {
+    conditions.push({ pricing_type_id: pricingTypeId });
+  }
+
+  return {
+    [Op.and]: [...conditions, ...filters],
+  };
+};
+
+const getPricingTypeForCarrier = async (carrier) => {
+  if (!carrier.pricing_type_id) return null;
+
+  const pricingType = await ShippingPricingType.findByPk(carrier.pricing_type_id, {
+    attributes: { exclude: ['createdAt', 'updatedAt'] },
+  });
+
+  return pricingType?.get({ plain: true }) ?? null;
+};
+
+const findRateForCarrier = async ({ carrierId, zoneId, weight, pricingType }) => {
+  const pricingTypeCode = pricingType?.code;
+  const pricingTypeId = pricingType?.id;
+
+  if (pricingTypeCode === SHIPPING_PRICING_TYPES.FIXED_PLUS_EXTRA) {
+    return findFixedPlusExtraRate({ carrierId, zoneId, pricingTypeId });
+  }
+
+  if (pricingTypeCode === SHIPPING_PRICING_TYPES.PER_KG) {
+    return findPerKgRate({ carrierId, zoneId, weight, pricingTypeId });
+  }
+
+  return findWeightRangeRate({ carrierId, zoneId, weight, pricingTypeId });
+};
+
+const findFixedPlusExtraRate = async ({ carrierId, zoneId, pricingTypeId }) => {
+  return findRateWithPricingFallback({
+    carrierId,
+    zoneId,
+    pricingTypeId,
     order: [
       ['max_weight', 'ASC'],
       ['id', 'ASC'],
     ],
-    attributes: { exclude: ['createdAt', 'updatedAt'] },
   });
-
-  if (rate) {
-    return {
-      rate: rate.get({ plain: true }),
-      useExtraKgOverflow: false,
-    };
-  }
-
-  const overflowRate = await ShippingRate.findOne({
-    where: {
-      carrier_id: carrierId,
-      zone_id: zoneId,
-      extra_kg_price: { [Op.gt]: 0 },
-      [Op.or]: [{ min_weight: null }, { min_weight: { [Op.lte]: weight } }],
-    },
-    order: [
-      ['max_weight', 'DESC'],
-      ['id', 'ASC'],
-    ],
-    attributes: { exclude: ['createdAt', 'updatedAt'] },
-  });
-
-  if (!overflowRate) return null;
-
-  return {
-    rate: overflowRate.get({ plain: true }),
-    useExtraKgOverflow: true,
-  };
 };
 
-const calculateRatePrice = (rate, weight, useExtraKgOverflow = false) => {
-  const basePrice = toNumber(rate.base_price);
-  const extraKgPrice = toNumber(rate.extra_kg_price);
+const findWeightRangeRate = async ({ carrierId, zoneId, weight, pricingTypeId }) => {
+  return findRateWithPricingFallback({
+    carrierId,
+    zoneId,
+    pricingTypeId,
+    filters: [
+      {
+        [Op.or]: [{ min_weight: null }, { min_weight: { [Op.lt]: weight } }],
+      },
+      {
+        max_weight: { [Op.gt]: weight },
+      },
+    ],
+    order: [
+      ['max_weight', 'ASC'],
+      ['id', 'ASC'],
+    ],
+  });
+};
 
-  if (extraKgPrice <= 0) return roundMoney(basePrice);
+const findPerKgRate = async ({ carrierId, zoneId, weight, pricingTypeId }) => {
+  return findRateWithPricingFallback({
+    carrierId,
+    zoneId,
+    pricingTypeId,
+    filters: [
+      {
+        max_weight: { [Op.gt]: weight },
+      },
+    ],
+    order: [
+      ['max_weight', 'ASC'],
+      ['id', 'ASC'],
+    ],
+  });
+};
 
-  const minWeight = toNumber(rate.min_weight);
-  const maxWeight = rate.max_weight === null ? null : toNumber(rate.max_weight);
-  let extraKg = 0;
-
-  if (useExtraKgOverflow && maxWeight !== null) {
-    extraKg = Math.ceil(Math.max(0, weight - maxWeight));
-  } else if (maxWeight === null) {
-    extraKg = Math.ceil(Math.max(0, weight - minWeight));
+const findRateWithPricingFallback = async ({
+  carrierId,
+  zoneId,
+  pricingTypeId,
+  filters = [],
+  order,
+}) => {
+  if (!pricingTypeId) {
+    return findRate({
+      where: buildRateWhere({ carrierId, zoneId, filters }),
+      order,
+    });
   }
 
-  return roundMoney(basePrice + extraKg * extraKgPrice);
+  const exactRate = await findRate({
+    where: buildRateWhere({ carrierId, zoneId, pricingTypeId, filters }),
+    order,
+  });
+
+  if (exactRate) return exactRate;
+
+  return findRate({
+    where: buildRateWhere({ carrierId, zoneId, pricingTypeId: null, filters }),
+    order,
+  });
+};
+
+const findRate = async ({ where, order }) => {
+  const rate = await ShippingRate.findOne({
+    where,
+    order,
+    attributes: { exclude: ['createdAt', 'updatedAt'] },
+  });
+
+  return rate?.get({ plain: true }) ?? null;
+};
+
+const calculateRatePrice = (rate, weight, pricingTypeCode) => {
+  const basePrice = toNumber(rate.base_price);
+  const extraKgPrice = toNumber(rate.extra_kg_price);
+  const maxWeight = rate.max_weight === null ? null : toNumber(rate.max_weight);
+
+  if (pricingTypeCode === SHIPPING_PRICING_TYPES.FIXED_PLUS_EXTRA) {
+    const extraKg = maxWeight === null ? 0 : Math.ceil(Math.max(0, weight - maxWeight));
+    return roundMoney(basePrice + extraKg * extraKgPrice);
+  }
+
+  if (pricingTypeCode === SHIPPING_PRICING_TYPES.PER_KG) {
+    return roundMoney(Math.ceil(weight) * basePrice);
+  }
+
+  return roundMoney(basePrice);
 };
 
 const getCarrierUsageCount = async (carrierId, rule) => {
@@ -237,12 +430,14 @@ const buildShippingOption = ({
   calculatedPrice,
   finalPrice,
   freeRule,
+  pricingType,
 }) => {
   return {
     id: carrier.id,
     carrier_id: carrier.id,
     name: carrier.name,
     pricing_type_id: carrier.pricing_type_id,
+    pricing_type: pricingType,
     pricing_source: carrier.pricing_source,
     is_active: carrier.is_active,
     active: carrier.is_active,
@@ -272,9 +467,30 @@ const buildShippingOption = ({
   };
 };
 
-const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) => {
+const resolveShippingWeight = async ({ weight, products }) => {
+  if (products !== undefined) {
+    return calculateCartShippingWeight(products);
+  }
+
+  const parsedWeight = toNumber(weight, null);
+
+  if (parsedWeight === null || parsedWeight < 0) {
+    throw createShippingError('El peso de envío debe ser mayor o igual a 0');
+  }
+
+  return {
+    physical_weight: parsedWeight,
+    volumetric_weight: 0,
+    chargeable_weight: parsedWeight,
+    weight_source: 'MANUAL',
+  };
+};
+
+const getAvailableShippingOptions = async ({ weight, products, zipCode, orderTotal = 0 }) => {
   const now = new Date();
   const { shippingCode, zone } = await getShippingZoneByZipCode(zipCode);
+  const weightSummary = await resolveShippingWeight({ weight, products });
+  const chargeableWeight = weightSummary.chargeable_weight;
 
   const carriers = await ShippingCarrier.findAll({
     where: {
@@ -290,6 +506,7 @@ const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) 
   const options = await Promise.all(
     carriers.map(async (carrierModel) => {
       const carrier = carrierModel.get({ plain: true });
+      const pricingType = await getPricingTypeForCarrier(carrier);
       const shouldDisplay = await carrierShouldBeDisplayed({
         carrierId: carrier.id,
         orderTotal,
@@ -301,16 +518,13 @@ const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) 
       const rateMatch = await findRateForCarrier({
         carrierId: carrier.id,
         zoneId: zone.id,
-        weight,
+        weight: chargeableWeight,
+        pricingType,
       });
 
       if (!rateMatch) return null;
 
-      const calculatedPrice = calculateRatePrice(
-        rateMatch.rate,
-        weight,
-        rateMatch.useExtraKgOverflow,
-      );
+      const calculatedPrice = calculateRatePrice(rateMatch, chargeableWeight, pricingType?.code);
       const freeRule = await findMatchingFreeRule({
         carrierId: carrier.id,
         zoneId: zone.id,
@@ -320,12 +534,13 @@ const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) 
 
       return buildShippingOption({
         carrier,
-        rate: rateMatch.rate,
+        rate: rateMatch,
         zone,
         shippingCode,
         calculatedPrice,
         finalPrice,
         freeRule,
+        pricingType,
       });
     }),
   );
@@ -334,10 +549,31 @@ const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) 
     zipCode: shippingCode.zipcode,
     zone,
     air_shipping_available: shippingCode.air_shipping_available,
-    weight,
+    weight: chargeableWeight,
+    weight_summary: weightSummary,
     order_total: orderTotal,
     options: options.filter(Boolean),
   };
 };
 
-export { getAvailableShippingOptions, getShippingZoneByZipCode };
+const getAvailableShippingOptionsFromUserCart = async ({ userId, zipCode, orderTotal = 0 }) => {
+  const weightSummary = await getCartShippingWeightByUserId(userId);
+
+  const quote = await getAvailableShippingOptions({
+    weight: weightSummary.chargeable_weight,
+    zipCode,
+    orderTotal,
+  });
+
+  return {
+    ...quote,
+    weight_summary: weightSummary,
+  };
+};
+
+export {
+  calculateCartShippingWeight,
+  getAvailableShippingOptions,
+  getAvailableShippingOptionsFromUserCart,
+  getShippingZoneByZipCode,
+};
