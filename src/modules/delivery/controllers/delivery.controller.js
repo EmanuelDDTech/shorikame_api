@@ -1,6 +1,6 @@
 import {
-  getAvailableShippingOptions,
   getAvailableShippingOptionsFromUserCart,
+  getAvailableShippingOptionsFromProducts,
   getShippingZoneByZipCode,
 } from '#modules/delivery/services/shipping.service.js';
 
@@ -15,25 +15,7 @@ const findAvailable = async (req, res) => {
 
 const quoteShipping = async (req, res) => {
   try {
-    const quote = await buildShippingQuote(req.method === 'GET' ? req.query : req.body);
-    return res.json(quote);
-  } catch (error) {
-    return res.status(error.statusCode || 500).json({ msg: error.message });
-  }
-};
-
-const quoteCurrentCartShipping = async (req, res) => {
-  const { id: userId } = req.user;
-
-  try {
-    const data = req.method === 'GET' ? req.query : req.body;
-    const orderTotal = parseOptionalNumber(
-      data.orderTotal ?? data.order_total ?? data.subtotal ?? data.amountSubtotal,
-      'orderTotal',
-    );
-    const zipCode = data.zipCode ?? data.zip ?? data.postalCode;
-    const quote = await getAvailableShippingOptionsFromUserCart({ userId, zipCode, orderTotal });
-
+    const quote = await buildShippingQuote(req.body);
     return res.json(quote);
   } catch (error) {
     return res.status(error.statusCode || 500).json({ msg: error.message });
@@ -52,44 +34,23 @@ const findZoneByZipCode = async (req, res) => {
 };
 
 const buildShippingQuote = async (data = {}) => {
-  const products = data.products ?? data.cart ?? data.cartProducts;
-  const weight =
-    products === undefined
-      ? parseRequiredNumber(data.weight ?? data.totalWeight, 'weight')
-      : parseOptionalNumber(data.weight ?? data.totalWeight, 'weight');
-  const orderTotal = parseOptionalNumber(
-    data.orderTotal ?? data.order_total ?? data.subtotal ?? data.amountSubtotal,
-    'orderTotal',
-  );
-  const zipCode = data.zipCode ?? data.zip ?? data.postalCode;
+  const productsIds = data.productsIds;
+  const userId = data.userId;
+  const zipCode = data.zipCode;
 
-  return getAvailableShippingOptions({ weight, products, zipCode, orderTotal });
-};
-
-const parseRequiredNumber = (value, fieldName) => {
-  if (value === undefined || value === null || value === '') {
-    throw createControllerError(`El parámetro ${fieldName} es obligatorio`);
+  if (!zipCode) {
+    throw createControllerError('El parámetro zipCode es obligatorio');
   }
 
-  const parsed = Number(value);
-
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    throw createControllerError(`El parámetro ${fieldName} debe ser un número mayor o igual a 0`);
+  if (userId) {
+    return getAvailableShippingOptionsFromUserCart({ userId, zipCode });
+  } else if (productsIds && Array.isArray(productsIds) && productsIds.length > 0) {
+    return getAvailableShippingOptionsFromProducts({ productsIds, zipCode });
+  } else {
+    throw createControllerError(
+      'Debe proporcionar un userId o una lista de productos para cotizar el envío',
+    );
   }
-
-  return parsed;
-};
-
-const parseOptionalNumber = (value, fieldName) => {
-  if (value === undefined || value === null || value === '') return 0;
-
-  const parsed = Number(value);
-
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    throw createControllerError(`El parámetro ${fieldName} debe ser un número mayor o igual a 0`);
-  }
-
-  return parsed;
 };
 
 const createControllerError = (message) => {
@@ -98,4 +59,4 @@ const createControllerError = (message) => {
   return error;
 };
 
-export { findAvailable, findZoneByZipCode, quoteCurrentCartShipping, quoteShipping };
+export { findAvailable, findZoneByZipCode, quoteShipping };
