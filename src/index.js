@@ -3,7 +3,7 @@ import { sequelize } from './database/database.js';
 
 async function main() {
   try {
-    await sequelize.sync({ alter: true });
+    await sequelize.sync({ alter: false });
 
     app.listen(process.env.PORT);
 
