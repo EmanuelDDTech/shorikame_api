@@ -33,7 +33,7 @@ const toNumber = (value, fallback = 0) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
-const roundMoney = (value) => Number((Math.round((value + Number.EPSILON) * 100) / 100).toFixed(2));
+const roundMoney = (value) => Number(Math.ceil(value));
 
 const normalizeZipCode = (zipCode) => String(zipCode ?? '').trim();
 
