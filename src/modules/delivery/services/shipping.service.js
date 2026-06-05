@@ -580,8 +580,6 @@ const getAvailableShippingOptionsFromProducts = async ({
   const products = await getProductsFromIds(productsIds);
   const weightSummary = await calculateCartShippingWeight(products);
 
-  console.log('Weight summary for provided products:', weightSummary);
-
   const quote = await getAvailableShippingOptions({
     weight: weightSummary.chargeable_weight,
     zipCode,
