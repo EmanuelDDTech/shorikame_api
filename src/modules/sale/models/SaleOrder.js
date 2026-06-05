@@ -24,6 +24,9 @@ export const SaleOrder = sequelize.define('sale_order', {
   payment_method: {
     type: DataTypes.ENUM('paypal', 'transferencia', 'mercadopago'),
   },
+  shipping_method: {
+    type: DataTypes.ENUM('envio', 'sucursal'),
+  },
   amount_subtotal: {
     type: DataTypes.DOUBLE,
   },
