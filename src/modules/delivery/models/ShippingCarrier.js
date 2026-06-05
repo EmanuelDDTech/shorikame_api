@@ -10,6 +10,9 @@ export const ShippingCarrier = sequelize.define('shipping_carrier', {
   name: {
     type: DataTypes.STRING,
   },
+  type: {
+    type: DataTypes.ENUM('PICKUP', 'DELIVERY'),
+  },
   pricing_type_id: {
     type: DataTypes.INTEGER,
     references: {
