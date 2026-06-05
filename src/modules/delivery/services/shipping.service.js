@@ -17,6 +17,19 @@ const SHIPPING_PRICING_TYPES = {
   PER_KG: 'PER_KG',
 };
 
+const SHIPPING_CARRIER_TYPES = {
+  DELIVERY: 'DELIVERY',
+  PICKUP: 'PICKUP',
+};
+
+const SHIPPING_METHODS = {
+  DELIVERY: 'envio',
+  PICKUP: 'sucursal',
+};
+
+const PICKUP_OPTION_ID = 'pickup-branch';
+const PICKUP_OPTION_NAME = 'Recoger en sucursal';
+
 const VOLUMETRIC_WEIGHT_DIVISOR = 5000;
 const PRODUCT_SHIPPING_ATTRIBUTES = ['id', 'weight', 'length', 'width', 'height'];
 
@@ -457,6 +470,7 @@ const buildShippingOption = ({
   return {
     id: carrier.id,
     carrier_id: carrier.id,
+    carrier_type: carrier.type,
     name: carrier.name,
     pricing_type_id: carrier.pricing_type_id,
     pricing_type: pricingType,
@@ -473,19 +487,23 @@ const buildShippingOption = ({
     amount_shipping: finalPrice,
     is_free_shipping: Boolean(freeRule),
     free_rule_id: freeRule?.id ?? null,
-    shipping_rate: {
-      ...rate,
-      calculated_price: calculatedPrice,
-    },
+    shipping_rate: rate
+      ? {
+          ...rate,
+          calculated_price: calculatedPrice,
+        }
+      : null,
     shipping_free_rule: freeRule,
-    delivery_price_rules: [
-      {
-        id: rate.id,
-        carrier_id: carrier.id,
-        max_value: rate.max_weight,
-        list_base_price: finalPrice,
-      },
-    ],
+    delivery_price_rules: rate
+      ? [
+          {
+            id: rate.id,
+            carrier_id: carrier.id,
+            max_value: rate.max_weight,
+            list_base_price: finalPrice,
+          },
+        ]
+      : [],
   };
 };
 
@@ -507,7 +525,6 @@ const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) 
   const options = await Promise.all(
     carriers.map(async (carrierModel) => {
       const carrier = carrierModel.get({ plain: true });
-      const pricingType = await getPricingTypeForCarrier(carrier);
       const shouldDisplay = await carrierShouldBeDisplayed({
         carrierId: carrier.id,
         orderTotal,
@@ -515,6 +532,21 @@ const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) 
       });
 
       if (!shouldDisplay) return null;
+
+      if (carrier.type === SHIPPING_CARRIER_TYPES.PICKUP) {
+        return buildShippingOption({
+          carrier,
+          rate: null,
+          zone,
+          shippingCode,
+          calculatedPrice: 0,
+          finalPrice: 0,
+          freeRule: null,
+          pricingType: null,
+        });
+      }
+
+      const pricingType = await getPricingTypeForCarrier(carrier);
 
       const rateMatch = await findRateForCarrier({
         carrierId: carrier.id,
