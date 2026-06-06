@@ -4,6 +4,11 @@ import {
   getShippingZoneByZipCode,
 } from '#modules/delivery/services/shipping.service.js';
 
+const SHIPPING_CARRIER_TYPES = {
+  DELIVERY: 'DELIVERY',
+  PICKUP: 'PICKUP',
+};
+
 const findAvailable = async (req, res) => {
   try {
     const quote = await buildShippingQuote(req.query);
@@ -37,15 +42,22 @@ const buildShippingQuote = async (data = {}) => {
   const productsIds = data.productsIds;
   const userId = data.userId;
   const zipCode = data.zipCode;
+  const type = String(data.type ?? SHIPPING_CARRIER_TYPES.DELIVERY)
+    .trim()
+    .toUpperCase();
 
-  if (!zipCode) {
-    throw createControllerError('El parámetro zipCode es obligatorio');
+  if (type !== SHIPPING_CARRIER_TYPES.DELIVERY && type !== SHIPPING_CARRIER_TYPES.PICKUP) {
+    throw createControllerError('El parámetro type debe ser "DELIVERY" o "PICKUP"');
+  }
+
+  if (type === SHIPPING_CARRIER_TYPES.DELIVERY && !zipCode) {
+    throw createControllerError('El parámetro zipCode es obligatorio para type=delivery');
   }
 
   if (userId) {
-    return getAvailableShippingOptionsFromUserCart({ userId, zipCode });
+    return getAvailableShippingOptionsFromUserCart({ userId, zipCode, type });
   } else if (productsIds && Array.isArray(productsIds) && productsIds.length > 0) {
-    return getAvailableShippingOptionsFromProducts({ productsIds, zipCode });
+    return getAvailableShippingOptionsFromProducts({ productsIds, zipCode, type });
   } else {
     throw createControllerError(
       'Debe proporcionar un userId o una lista de productos para cotizar el envío',

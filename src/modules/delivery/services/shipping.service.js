@@ -478,10 +478,10 @@ const buildShippingOption = ({
     is_active: carrier.is_active,
     active: carrier.is_active,
     priority: carrier.priority,
-    zone_id: zone.id,
+    zone_id: zone?.id ?? null,
     zone,
-    zipcode: shippingCode.zipcode,
-    air_shipping_available: shippingCode.air_shipping_available,
+    zipcode: shippingCode?.zipcode ?? null,
+    air_shipping_available: shippingCode?.air_shipping_available ?? false,
     price: finalPrice,
     amount: finalPrice,
     amount_shipping: finalPrice,
@@ -507,13 +507,44 @@ const buildShippingOption = ({
   };
 };
 
-const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) => {
+const resolveCarrierTypeFromQuoteType = (type) => {
+  if (type === SHIPPING_CARRIER_TYPES.DELIVERY) {
+    return SHIPPING_CARRIER_TYPES.DELIVERY;
+  }
+
+  if (type === SHIPPING_CARRIER_TYPES.PICKUP) {
+    return SHIPPING_CARRIER_TYPES.PICKUP;
+  }
+
+  throw createShippingError('El parámetro type debe ser "DELIVERY" o "PICKUP"');
+};
+
+const getAvailableShippingOptions = async ({
+  weight,
+  zipCode,
+  orderTotal = 0,
+  type = SHIPPING_CARRIER_TYPES.DELIVERY,
+}) => {
   const now = new Date();
-  const { shippingCode, zone } = await getShippingZoneByZipCode(zipCode);
+  const carrierType = resolveCarrierTypeFromQuoteType(type);
+
+  let shippingCode = null;
+  let zone = null;
+
+  if (carrierType === SHIPPING_CARRIER_TYPES.DELIVERY) {
+    if (!normalizeZipCode(zipCode)) {
+      throw createShippingError('El código postal es obligatorio para type=DELIVERY');
+    }
+
+    const zoneData = await getShippingZoneByZipCode(zipCode);
+    shippingCode = zoneData.shippingCode;
+    zone = zoneData.zone;
+  }
 
   const carriers = await ShippingCarrier.findAll({
     where: {
       is_active: true,
+      type: carrierType,
     },
     order: [
       ['priority', 'ASC'],
@@ -550,7 +581,7 @@ const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) 
 
       const rateMatch = await findRateForCarrier({
         carrierId: carrier.id,
-        zoneId: zone.id,
+        zoneId: zone?.id,
         weight: weight,
         pricingType,
       });
@@ -560,7 +591,7 @@ const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) 
       const calculatedPrice = calculateRatePrice(rateMatch, weight, pricingType?.code);
       const freeRule = await findMatchingFreeRule({
         carrierId: carrier.id,
-        zoneId: zone.id,
+        zoneId: zone?.id,
         orderTotal,
       });
       const finalPrice = freeRule ? 0 : calculatedPrice;
@@ -579,9 +610,9 @@ const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) 
   );
 
   return {
-    zipCode: shippingCode.zipcode,
+    zipCode: shippingCode?.zipcode ?? null,
     zone,
-    air_shipping_available: shippingCode.air_shipping_available,
+    air_shipping_available: shippingCode?.air_shipping_available ?? false,
     weight,
     // weight_summary: weightSummary,
     order_total: orderTotal,
@@ -589,13 +620,19 @@ const getAvailableShippingOptions = async ({ weight, zipCode, orderTotal = 0 }) 
   };
 };
 
-const getAvailableShippingOptionsFromUserCart = async ({ userId, zipCode, orderTotal = 0 }) => {
+const getAvailableShippingOptionsFromUserCart = async ({
+  userId,
+  zipCode,
+  orderTotal = 0,
+  type = SHIPPING_CARRIER_TYPES.DELIVERY,
+}) => {
   const weightSummary = await getCartShippingWeightByUserId(userId);
 
   const quote = await getAvailableShippingOptions({
     weight: weightSummary.chargeable_weight,
     zipCode,
     orderTotal,
+    type,
   });
 
   return {
@@ -608,6 +645,7 @@ const getAvailableShippingOptionsFromProducts = async ({
   productsIds,
   zipCode,
   orderTotal = 0,
+  type = SHIPPING_CARRIER_TYPES.DELIVERY,
 }) => {
   const products = await getProductsFromIds(productsIds);
   const weightSummary = await calculateCartShippingWeight(products);
@@ -616,6 +654,7 @@ const getAvailableShippingOptionsFromProducts = async ({
     weight: weightSummary.chargeable_weight,
     zipCode,
     orderTotal,
+    type,
   });
 
   return {
