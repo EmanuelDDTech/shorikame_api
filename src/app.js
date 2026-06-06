@@ -33,6 +33,7 @@ import cardRoutes from '#modules/cards/routes/card.routes.js';
 const app = express();
 
 app.use(morgan('dev'));
+
 app.use(express.json());
 
 const whitelist = [process.env.FRONTEND_URL];
