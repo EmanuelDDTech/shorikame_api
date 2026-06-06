@@ -1,72 +1,74 @@
-import { Op } from 'sequelize';
-import { DeliveryCarrier } from '#modules/delivery/models/DeliveryCarrier.js';
-import { DeliveryPriceRule } from '#modules/delivery/models/DeliveryPriceRule.js';
-import { Product } from '#modules/product/models/Product.js';
+import {
+  getAvailableShippingOptionsFromUserCart,
+  getAvailableShippingOptionsFromProducts,
+  getShippingZoneByZipCode,
+} from '#modules/delivery/services/shipping.service.js';
+
+const SHIPPING_CARRIER_TYPES = {
+  DELIVERY: 'DELIVERY',
+  PICKUP: 'PICKUP',
+};
 
 const findAvailable = async (req, res) => {
-  const { weight, zipCode } = req.query;
-  const serviceLevels = ['delivery'];
-  let freeDelivery = {};
-
   try {
-    const deliveries = await DeliveryCarrier.findAll({
-      where: {
-        free_over: false,
-        servicelevel: serviceLevels,
-      },
-      attributes: { exclude: ['createdAt', 'updatedAt'] },
-      include: [
-        {
-          model: DeliveryPriceRule,
-          required: true,
-          order: [['max_value', 'ASC']],
-          where: {
-            max_value: {
-              [Op.gte]: weight,
-            },
-          },
-          attributes: { exclude: ['createdAt', 'updatedAt'] },
-        },
-      ],
-    });
-
-    if (weight <= 0) {
-      freeDelivery = await findFreeDelivery();
-      deliveries.push(freeDelivery);
-    }
-
-    const localDelivery = await findLocalDelivery();
-    if (localDelivery) deliveries.push(localDelivery);
-
-    return res.json(deliveries);
+    const quote = await buildShippingQuote(req.query);
+    return res.json(quote.options);
   } catch (error) {
-    return res.status(500).json({ msg: error.message });
+    return res.status(error.statusCode || 500).json({ msg: error.message });
   }
 };
 
-const findFreeDelivery = async () => {
+const quoteShipping = async (req, res) => {
   try {
-    return await DeliveryCarrier.findOne({
-      where: {
-        free_over: true,
-      },
-    });
+    const quote = await buildShippingQuote(req.body);
+    return res.json(quote);
   } catch (error) {
-    return res.status(500).json({ msg: error.message });
+    return res.status(error.statusCode || 500).json({ msg: error.message });
   }
 };
 
-const findLocalDelivery = async () => {
+const findZoneByZipCode = async (req, res) => {
+  const { zipCode } = req.params;
+
   try {
-    return await DeliveryCarrier.findOne({
-      where: {
-        free_over: true,
-        servicelevel: 'local',
-      },
-    });
+    const zone = await getShippingZoneByZipCode(zipCode);
+    return res.json(zone);
   } catch (error) {
-    return res.status(500).json({ msg: error.message });
+    return res.status(error.statusCode || 500).json({ msg: error.message });
   }
 };
 
-export { findAvailable };
+const buildShippingQuote = async (data = {}) => {
+  const productsIds = data.productsIds;
+  const userId = data.userId;
+  const zipCode = data.zipCode;
+  const type = String(data.type ?? SHIPPING_CARRIER_TYPES.DELIVERY)
+    .trim()
+    .toUpperCase();
+
+  if (type !== SHIPPING_CARRIER_TYPES.DELIVERY && type !== SHIPPING_CARRIER_TYPES.PICKUP) {
+    throw createControllerError('El parámetro type debe ser "DELIVERY" o "PICKUP"');
+  }
+
+  if (type === SHIPPING_CARRIER_TYPES.DELIVERY && !zipCode) {
+    throw createControllerError('El parámetro zipCode es obligatorio para type=delivery');
+  }
+
+  if (userId) {
+    return getAvailableShippingOptionsFromUserCart({ userId, zipCode, type });
+  } else if (productsIds && Array.isArray(productsIds) && productsIds.length > 0) {
+    return getAvailableShippingOptionsFromProducts({ productsIds, zipCode, type });
+  } else {
+    throw createControllerError(
+      'Debe proporcionar un userId o una lista de productos para cotizar el envío',
+    );
+  }
+};
+
+const createControllerError = (message) => {
+  const error = new Error(message);
+  error.statusCode = 400;
+  return error;
+};
+
+export { findAvailable, findZoneByZipCode, quoteShipping };

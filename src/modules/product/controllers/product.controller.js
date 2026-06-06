@@ -75,6 +75,9 @@ const updateProduct = async (req, res) => {
     sku,
     product_category_id,
     weight,
+    length,
+    width,
+    height,
     active,
   } = req.body;
 
@@ -97,6 +100,9 @@ const updateProduct = async (req, res) => {
     product.stock_visible = stock_visible ?? product.stock_visible;
     product.product_category_id = product_category_id ?? product.product_category_id;
     product.weight = weight ?? product.weight;
+    product.length = length ?? product.length;
+    product.width = width ?? product.width;
+    product.height = height ?? product.height;
     product.active = active ?? product.active;
 
     console.log(product);
