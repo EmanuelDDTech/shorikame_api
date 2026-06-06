@@ -13,4 +13,11 @@ async function main() {
   }
 }
 
-main();
+// Vercel loads this module and expects an export instead of a listen() call.
+export default app;
+
+const isVercel = process.env.VERCEL === '1';
+
+if (!isVercel) {
+  main();
+}
