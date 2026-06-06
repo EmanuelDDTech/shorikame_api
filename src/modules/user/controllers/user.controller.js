@@ -55,7 +55,17 @@ const getUserById = async (req, res) => {
           include: [
             {
               model: Product,
-              attributes: ['id', 'name', 'price', 'stock', 'discount', 'weight'],
+              attributes: [
+                'id',
+                'name',
+                'price',
+                'stock',
+                'discount',
+                'weight',
+                'length',
+                'width',
+                'height',
+              ],
               include: [
                 {
                   model: ProductGallery,

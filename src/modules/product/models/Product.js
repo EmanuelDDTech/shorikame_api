@@ -47,6 +47,15 @@ export const Product = sequelize.define('products', {
   weight: {
     type: DataTypes.DOUBLE,
   },
+  length: {
+    type: DataTypes.DOUBLE,
+  },
+  width: {
+    type: DataTypes.DOUBLE,
+  },
+  height: {
+    type: DataTypes.DOUBLE,
+  },
 });
 
 ProductCategory.hasMany(Product, {
