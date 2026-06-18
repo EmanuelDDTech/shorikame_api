@@ -2,8 +2,9 @@ import { DataTypes } from 'sequelize';
 import { sequelize } from '#src/database/database.js';
 import { User } from '#modules/user/models/User.js';
 import { Address } from '#modules/address/models/Address.js';
-import { DeliveryCarrier } from '#modules/delivery/models/DeliveryCarrier.js';
+// import { DeliveryCarrier } from '#modules/delivery/models/DeliveryCarrier.js';
 import { DiscountCode } from '#modules/discount/models/DiscountCode.js';
+import { ShippingCarrier } from '#src/modules/delivery/models/ShippingCarrier.js';
 
 export const SaleOrder = sequelize.define('sale_order', {
   id: {
@@ -66,11 +67,11 @@ SaleOrder.belongsTo(Address, {
   targetId: 'id',
 });
 
-DeliveryCarrier.hasMany(SaleOrder, {
+ShippingCarrier.hasMany(SaleOrder, {
   foreignKey: 'delivery_carrier_id',
   sourceKey: 'id',
 });
-SaleOrder.belongsTo(DeliveryCarrier, {
+SaleOrder.belongsTo(ShippingCarrier, {
   foreignKey: 'delivery_carrier_id',
   targetId: 'id',
 });
