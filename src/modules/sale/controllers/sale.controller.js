@@ -24,7 +24,8 @@ import { order } from '#modules/payments/controllers/paypal.controller.js';
 import { ProductGallery } from '#modules/product/models/ProductGallery.js';
 import { Address } from '#modules/address/models/Address.js';
 import { User } from '#modules/user/models/User.js';
-import { DeliveryCarrier } from '#modules/delivery/models/DeliveryCarrier.js';
+// import { DeliveryCarrier } from '#modules/delivery/models/DeliveryCarrier.js';
+import { ShippingCarrier } from '#src/modules/delivery/models/ShippingCarrier.js';
 
 const getOrders = async (req, res) => {
   const { id: userId } = req.user;
@@ -100,6 +101,10 @@ const getOrdersAdmin = async (req, res) => {
         {
           model: User,
           attributes: ['id', 'name', 'email'],
+        },
+        {
+          model: ShippingCarrier,
+          attributes: ['id', 'name'],
         },
       ],
     });
@@ -373,7 +378,7 @@ const getOrderById = async (req, res) => {
           attributes: ['id', 'name', 'email'],
         },
         {
-          model: DeliveryCarrier,
+          model: ShippingCarrier,
           attributes: ['id', 'name'],
         },
       ],
