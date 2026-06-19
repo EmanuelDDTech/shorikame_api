@@ -31,6 +31,7 @@ const getFeaturedProductAll = async (req, res) => {
       include: {
         model: Product,
         attributes: { exclude: ['createdAt', 'updatedAt'] },
+        where: { active: true },
         include: {
           model: ProductGallery,
           attributes: ['id', 'order', 'url'],
